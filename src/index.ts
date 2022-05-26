@@ -1,21 +1,24 @@
-// import faceLandmarksDetection from "@tensorflow-models/face-landmarks-detection";
+import {
+  SupportedModels,
+  MediaPipeFaceMeshTfjsModelConfig,
+  createDetector,
+} from "@tensorflow-models/face-landmarks-detection";
+import "@tensorflow/tfjs-core";
+import "@tensorflow/tfjs-backend-webgl";
+import "@mediapipe/face_mesh";
 
-// export async function init() {
-//   const model = faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh;
-//   const detectorConfig = {
-//     runtime: "mediapipe", // or 'tfjs'
-//     solutionPath: "https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh",
-//     refineLandmarks: true,
-//   };
+export async function init() {
+  const model = SupportedModels.MediaPipeFaceMesh;
 
-//   const detector = await faceLandmarksDetection.createDetector(
-//     model,
-//     // @ts-expect-error
-//     detectorConfig
-//   );
+  const detectorConfig: MediaPipeFaceMeshTfjsModelConfig = {
+    runtime: "tfjs",
+    refineLandmarks: true,
+  };
 
-//   console.log(detector);
-// }
+  const detector = await createDetector(model, detectorConfig);
+
+  console.log(detector);
+}
 
 /**
  * This is a function to add two numbers together.
