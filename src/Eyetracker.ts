@@ -9,13 +9,6 @@ import "@mediapipe/face_mesh";
 
 export class Eyetracker {
 
-  constraint = {
-    audio: false,
-    video: {
-      width: { min: 1024, ideal: 1280, max: 1920 },
-      height: { min: 576, ideal: 720, max: 1080 }
-    }
-  }
   async init() {
     const model = SupportedModels.MediaPipeFaceMesh;
 
@@ -44,7 +37,7 @@ export class Eyetracker {
     let stream = null;
 
     try {
-      stream = await navigator.mediaDevices.getUserMedia(this.constraint);
+      stream = await navigator.mediaDevices.getUserMedia({video: true, audio: false});
       return stream;
     } catch (err) {
       console.log('No available devices or permission rejected.');
