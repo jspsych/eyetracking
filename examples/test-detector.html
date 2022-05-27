@@ -16,9 +16,10 @@
 
     async function cameraSetup() {
       await Eyetracker.getCameraPermission()
-      Eyetracker.getListOfCameras();
+      console.log(Eyetracker.getListOfCameras());
     }
-    cameraSetup()
     
+    cameraSetup()
+
   </script>
 </html>
