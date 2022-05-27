@@ -5,8 +5,13 @@
   </head>
   <body></body>
   <script>
-    document.querySelector("body").innerHTML = `2 + 2 = ${eyetrack.add(2, 2)}`;
+    var Eyetracker = eyetrack.initEyetracker();
 
-    eyetrack.init();
+    document.querySelector("body").innerHTML = `2 + 2 = ${Eyetracker.add(
+      2,
+      2
+    )}`;
+
+    Eyetracker.init();
   </script>
 </html>

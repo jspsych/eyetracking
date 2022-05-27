@@ -1,5 +1,6 @@
-import { add } from "../src/index";
+import { initEyetracker } from "../src/index";
 
 test("test adds two numbers", () => {
-  expect(add(2, 2)).toEqual(4);
+  const eye = initEyetracker();
+  expect(eye.add(2, 2)).toEqual(4);
 });
