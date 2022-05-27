@@ -31,4 +31,9 @@ export class Eyetracker {
   add(a: number, b: number): number {
     return a + b;
   }
+
+  private async getCameraPermission(): Promise<any> {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: true })
+    return stream
+  }
 }
