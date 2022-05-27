@@ -13,7 +13,12 @@
     )}`;
 
     Eyetracker.init();
-    Eyetracker.getCameraPermission()
-    console.log(Eyetracker.getListOfCameras())
+
+    async function cameraSetup() {
+      await Eyetracker.getCameraPermission()
+      Eyetracker.getListOfCameras();
+    }
+    cameraSetup()
+    
   </script>
 </html>

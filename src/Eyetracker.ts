@@ -38,13 +38,13 @@ export class Eyetracker {
   }
 
   async getListOfCameras(): Promise<any> {
-    navigator.mediaDevices.enumerateDevices()
-    .then((devices) => {
-      console.log(devices)
-      const vidStreams = (devices.filter((d) => {
-        d.kind === "videoinput"
-      }))
-      console.log(vidStreams)
-    })
+    const devices = await navigator.mediaDevices.enumerateDevices()
+    console.log(devices)
+      for (let i = 0; i < devices.length; i++) {
+        if (devices[i].kind === "videoinput") {
+            console.log(devices[i].label)
+        }
+      }
   }
+
 }
