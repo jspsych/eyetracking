@@ -42,7 +42,7 @@ export class Eyetracker {
     const devices = await navigator.mediaDevices.enumerateDevices()
       for (let i = 0; i < devices.length; i++) {
         if (devices[i].kind === "videoinput") {
-            cameraList.push(devices[i].label)
+            cameraList.push(devices[i].deviceId)
         }
       }
     console.log(cameraList);
