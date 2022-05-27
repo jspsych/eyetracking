@@ -37,15 +37,16 @@ export class Eyetracker {
     return stream
   }
 
-  async getListOfCameras(): Promise<any> {
-    let cameraList = []
+  async getListOfCameras(): Promise<Array<String>> {
+    const cameraList :Array<String> = []
     const devices = await navigator.mediaDevices.enumerateDevices()
-    console.log(devices)
       for (let i = 0; i < devices.length; i++) {
         if (devices[i].kind === "videoinput") {
-            console.log(devices[i].label)
+            cameraList.push(devices[i].label)
         }
       }
+    console.log(cameraList);
+    return cameraList
   }
 
 }

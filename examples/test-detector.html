@@ -16,7 +16,7 @@
 
     async function cameraSetup() {
       await Eyetracker.getCameraPermission()
-      console.log(Eyetracker.getListOfCameras());
+      console.log(await Eyetracker.getListOfCameras());
     }
     
     cameraSetup()
