@@ -32,8 +32,19 @@ export class Eyetracker {
     return a + b;
   }
 
-  private async getCameraPermission(): Promise<any> {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: true })
+  async getCameraPermission(): Promise<any> {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: true });
     return stream
+  }
+
+  async getListOfCameras(): Promise<any> {
+    navigator.mediaDevices.enumerateDevices()
+    .then((devices) => {
+      console.log(devices)
+      const vidStreams = (devices.filter((d) => {
+        d.kind === "videoinput"
+      }))
+      console.log(vidStreams)
+    })
   }
 }
