@@ -67,4 +67,10 @@ export class Eyetracker {
     return videoDevices
   }
 
+  async setCamera(device: MediaDeviceInfo): Promise<MediaStream> {
+    //console.log(device.deviceId)
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: device.deviceId }})
+    return stream
+  }
+
 }
