@@ -17,7 +17,8 @@
     async function cameraSetup() {
       await Eyetracker.getCameraPermission()
       const test = await Eyetracker.getListOfCameras();
-      console.log(await Eyetracker.setCamera(await test[1]));
+      // console.log(test)
+      // console.log(await Eyetracker.setCamera(await test[1]));
       console.log(await Eyetracker.setCamera(await test[0]));
     }
     

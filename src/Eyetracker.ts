@@ -54,11 +54,14 @@ export class Eyetracker {
 
   async getListOfCameras(): Promise<Array<MediaDeviceInfo>> {
     const devices = await navigator.mediaDevices.enumerateDevices()
+    // const cameraList: Array<String> = []
     // for (let i = 0; i < devices.length; i++) {
     //   if (devices[i].kind === "videoinput") {
     //     cameraList.push(devices[i].deviceId)
     //   }
     // }
+    // return cameraList
+    // Take this approach? Where return type are 
     const videoDevices = devices.filter((d) => {
       d.kind === 'videoinput'
       return d.kind === 'videoinput'
@@ -69,8 +72,13 @@ export class Eyetracker {
 
   async setCamera(device: MediaDeviceInfo): Promise<MediaStream> {
     //console.log(device.deviceId)
+    // If getListOfCameras uses strings, then deviceId would just be set equal to the parameters
     const stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: device.deviceId }})
     return stream
   }
+
+  // createDisplay(height: Number, width: Number):Object {
+  //   let display = document.createElement("canvas")
+  // }
 
 }
