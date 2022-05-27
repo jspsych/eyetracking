@@ -52,16 +52,19 @@ export class Eyetracker {
     }
   }
 
-  async getListOfCameras(): Promise<Array<String>> {
-    const cameraList: Array<String> = []
+  async getListOfCameras(): Promise<Array<MediaDeviceInfo>> {
     const devices = await navigator.mediaDevices.enumerateDevices()
-    for (let i = 0; i < devices.length; i++) {
-      if (devices[i].kind === "videoinput") {
-        cameraList.push(devices[i].deviceId)
-      }
-    }
-    console.log(cameraList);
-    return cameraList
+    // for (let i = 0; i < devices.length; i++) {
+    //   if (devices[i].kind === "videoinput") {
+    //     cameraList.push(devices[i].deviceId)
+    //   }
+    // }
+    const videoDevices = devices.filter((d) => {
+      d.kind === 'videoinput'
+      return d.kind === 'videoinput'
+    })
+  
+    return videoDevices
   }
 
 }
