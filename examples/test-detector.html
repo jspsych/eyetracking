@@ -23,7 +23,10 @@
       console.log(await Eyetracker.setCamera(await test[0]));
       stream = await Eyetracker.setCamera(await test[0]);
 
-      await Eyetracker.showDisplay(300, 400, 'test', stream)
+      const video = await Eyetracker.showDisplay(300, 400, 'test', stream)
+      const detector = await Eyetracker.faceLandmarkDetection()
+      console.log(detector)
+      await console.log(await detector.estimateFaces(video))
     }
     
     cameraSetup()

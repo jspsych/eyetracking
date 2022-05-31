@@ -104,7 +104,20 @@ export class Eyetracker {
     // @ts-ignore
     return detector = await createDetector(model, detectorConfig);
   }
-   
+  
+  async faceLandmarkDetection() {
+    const model = SupportedModels.MediaPipeFaceMesh;
+
+    const detectorConfig: MediaPipeFaceMeshTfjsModelConfig = {
+      runtime: "tfjs",
+      refineLandmarks: true,
+    };
+
+    const detector = await createDetector(model, detectorConfig);
+
+    return detector
+  }
+
   async isFaceValid(stream: any, detector: any) {
     const faces = await detector.estimateFaces(stream, {flipHorizontal: true});
     if(faces.length > 0) {
