@@ -24,7 +24,9 @@
     
     cameraSetup()
 
-    console.log(Eyetracker.createDisplay(300, 300, 'test'))
+    canvas = Eyetracker.createDisplay(300, 400, 'test');
+    console.log(canvas)
+    document.body.appendChild(canvas);
 
   </script>
 </html>

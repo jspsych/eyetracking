@@ -78,6 +78,10 @@ export class Eyetracker {
     return display
   }
 
+  // showDisplay():void {
+
+  // }
+
   async setFaceLandmarkDetectionModel() {
     const model = SupportedModels.MediaPipeFaceMesh;
     const detectorConfig = {
