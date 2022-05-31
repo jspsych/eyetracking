@@ -70,8 +70,12 @@ export class Eyetracker {
     return stream
   }
 
-  // createDisplay(height: Number, width: Number):Object {
-  //   let display = document.createElement("canvas")
-  // }
+  createDisplay(height: Number, width: Number, Id: string):Object {
+    let display = document.createElement("canvas")
+    display.setAttribute('id', Id);
+    display.style.height = `${height.toString()}px`
+    display.style.width = `${width.toString()}px`
+    return display
+  }
 
 }
