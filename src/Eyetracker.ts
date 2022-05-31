@@ -78,9 +78,19 @@ export class Eyetracker {
     return display
   }
 
-  // showDisplay():void {
+  showDisplay(height: Number, width: Number, Id: string, stream: MediaStream):Object {
+    let video = document.createElement('video')
+    video.setAttribute('id', Id)
+    document.body.appendChild(video)
+    video.style.transform = 'scaleX(-1)'
+    video.style.height = `${height.toString()}px`
+    video.style.width = `${width.toString()}px`
+    video.autoplay = true;
 
-  // }
+    video.srcObject = stream
+    console.log(video)
+    return video
+  }
 
   async setFaceLandmarkDetectionModel() {
     const model = SupportedModels.MediaPipeFaceMesh;
