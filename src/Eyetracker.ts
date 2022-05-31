@@ -78,4 +78,25 @@ export class Eyetracker {
     return display
   }
 
+  async setFaceLandmarkDetectionModel() {
+    const model = SupportedModels.MediaPipeFaceMesh;
+    const detectorConfig = {
+      runtime: 'mediapipe',
+      refineLandmarks: true,
+      solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh',
+                    // or 'base/node_modules/@mediapipe/face_mesh' in npm.
+    };
+    // @ts-ignore
+    return detector = await createDetector(model, detectorConfig);
+  }
+   
+  async isFaceValid(stream: any, detector: any) {
+    const faces = await detector.estimateFaces(stream, {flipHorizontal: true});
+    if(faces.length > 0) {
+      console.log('Face detected.')
+      console.log(faces);
+    }
+    else {console.log('Waiting for faces...')}
+  }
+
 }
