@@ -75,6 +75,7 @@ export class Eyetracker {
     display.setAttribute('id', Id);
     display.style.height = `${height.toString()}px`
     display.style.width = `${width.toString()}px`
+    //const ctx = display.getContext('2d')
     return display
   }
 
