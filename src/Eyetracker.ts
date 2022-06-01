@@ -111,8 +111,8 @@ export class Eyetracker {
 
     const detectorConfig: MediaPipeFaceMeshTfjsModelConfig = {
       runtime: "tfjs",
-      refineLandmarks: true,
       maxFaces: 1,
+      refineLandmarks: true,
     };
 
     console.log(model)
@@ -121,13 +121,11 @@ export class Eyetracker {
     return detector
   }
 
-  async isFaceValid(stream: any, detector: any) {
-    const faces = await detector.estimateFaces(stream, {flipHorizontal: true});
-    if(faces.length > 0) {
-      console.log('Face detected.')
-      console.log(faces);
-    }
-    else {console.log('Waiting for faces...')}
+  async isFaceValid(video: HTMLVideoElement, detector: any): Promise<any> {
+    const faces = await detector.estimateFaces(video, {flipHorizontal: true});
+    if(faces.length > 0) {console.log('FACE DETECTED!')}
+    else {console.log('waiting for faces...')}
+    window.requestAnimationFrame(await this.isFaceValid(video, detector));
   }
 
 }

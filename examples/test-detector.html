@@ -13,14 +13,13 @@
       2
     )}`;
 
-    Eyetracker.init();
 
     async function cameraSetup() {
       await Eyetracker.getCameraPermission()
       const test = await Eyetracker.getListOfCameras();
+      console.log('List of cameras available' + test);
       // console.log(test)
       // console.log(await Eyetracker.setCamera(await test[1]));
-      console.log(await Eyetracker.setCamera(await test[0]));
       stream = await Eyetracker.setCamera(await test[0]);
 
       const video = await Eyetracker.showDisplay(300, 400, 'test', stream)
