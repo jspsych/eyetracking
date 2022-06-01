@@ -98,6 +98,7 @@ export class Eyetracker {
     const detectorConfig = {
       runtime: 'mediapipe',
       refineLandmarks: true,
+      maxFaces: 1,
       solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh',
                     // or 'base/node_modules/@mediapipe/face_mesh' in npm.
     };
@@ -111,8 +112,10 @@ export class Eyetracker {
     const detectorConfig: MediaPipeFaceMeshTfjsModelConfig = {
       runtime: "tfjs",
       refineLandmarks: true,
+      maxFaces: 1,
     };
 
+    console.log(model)
     const detector = await createDetector(model, detectorConfig);
 
     return detector

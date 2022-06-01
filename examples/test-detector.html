@@ -24,16 +24,24 @@
       stream = await Eyetracker.setCamera(await test[0]);
 
       const video = await Eyetracker.showDisplay(300, 400, 'test', stream)
+
+      img = document.createElement('img')
+      img.crossOrigin = 'anonymous'
+      img.src = 'https://i0.wp.com/post.medicalnewstoday.com/wp-content/uploads/sites/3/2020/03/GettyImages-1092658864_hero-1024x575.jpg?w=1155&h=1528'
+      
+      document.body.appendChild(img)
+
       const detector = await Eyetracker.faceLandmarkDetection()
       console.log(detector)
-      await console.log(await detector.estimateFaces(video))
+      
+      console.log(await detector.estimateFaces(img))
     }
     
     cameraSetup()
 
-    canvas = Eyetracker.createDisplay(300, 400, 'test');
-    console.log(canvas)
-    document.body.appendChild(canvas);
+    // canvas = Eyetracker.createDisplay(300, 400, 'test');
+    // console.log(canvas)
+    // document.body.appendChild(canvas);
 
   </script>
 </html>
