@@ -92,39 +92,24 @@ export class Eyetracker {
     console.log(video)
     return video
   }
-
-  async setFaceLandmarkDetectionModel() {
-    const model = SupportedModels.MediaPipeFaceMesh;
-    const detectorConfig = {
-      runtime: 'mediapipe',
-      refineLandmarks: true,
-      solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh',
-                    // or 'base/node_modules/@mediapipe/face_mesh' in npm.
-    };
-    // @ts-ignore
-    return detector = await createDetector(model, detectorConfig);
-  }
   
   async faceLandmarkDetection() {
     const model = SupportedModels.MediaPipeFaceMesh;
 
     const detectorConfig: MediaPipeFaceMeshTfjsModelConfig = {
       runtime: "tfjs",
+      maxFaces: 1,
       refineLandmarks: true,
     };
 
-    const detector = await createDetector(model, detectorConfig);
-
-    return detector
+    return await createDetector(model, detectorConfig);
   }
 
-  async isFaceValid(stream: any, detector: any) {
-    const faces = await detector.estimateFaces(stream, {flipHorizontal: true});
-    if(faces.length > 0) {
-      console.log('Face detected.')
-      console.log(faces);
-    }
-    else {console.log('Waiting for faces...')}
+  async isFaceValid(video: HTMLVideoElement, detector: any): Promise<any> {
+    const faces = await detector.estimateFaces(video, {flipHorizontal: true});
+    if(faces.length > 0) {console.log('FACE DETECTED!')}
+    else {console.log('waiting for faces...')}
+    window.requestAnimationFrame(await this.isFaceValid(video, detector));
   }
 
 }
