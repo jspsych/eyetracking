@@ -62,7 +62,7 @@ export class Eyetracker {
     });
   }
 
-  createDisplay(Id: string) { 
+  createDisplay(Id: string) {
     let canvas = document.createElement("canvas")
     canvas.setAttribute('id', Id);
     document.body.appendChild(canvas);
@@ -82,16 +82,22 @@ export class Eyetracker {
     else { console.log('Undefined Property \"this.video\"'); }
   }
 
-  setDisplay(video: HTMLVideoElement, canvas: HTMLCanvasElement): CanvasRenderingContext2D | null {
-    canvas.height = video.height
-    canvas.width = video.width
-    var ctx = canvas.getContext('2d');
-    if (ctx != null) {
-      ctx.translate(canvas.width, 0);
-      ctx.scale(-1, 1);
-      ctx.fillStyle = "green";
+  // Need to test this out
+  setDisplay() {
+    let canvas = this.canvas;
+    let video = this.video;
+    if ((canvas != undefined) && (video != undefined)) {
+      canvas.height = video.height
+      canvas.width = video.width
+      var ctx = canvas.getContext('2d');
+      if (ctx != null) {
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1);
+        ctx.fillStyle = "green";
+      }
+      (this.ctx as (undefined | CanvasRenderingContext2D | null)) = ctx;
     }
-    return ctx;
+    else { console.log('/"this.canvas/", /"this.video/" Undefined'); }
   }
 
   showDisplay() {
