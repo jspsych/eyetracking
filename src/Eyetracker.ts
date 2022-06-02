@@ -63,12 +63,30 @@ export class Eyetracker {
     return stream
   }
 
-  createDisplay(video: HTMLVideoElement, Id: string): CanvasRenderingContext2D | null {
+  async createVideo(height: number, width: number, Id: string, stream: MediaStream): Promise<any> {
+    let video = document.createElement('video')
+    video.setAttribute('id', Id)
+    document.body.appendChild(video)
+    video.style.transform = 'scaleX(-1)'
+    // video.style.height = `${height.toString()}px`
+    // video.style.width = `${width.toString()}px`
+    video.srcObject = stream;
+    video.autoplay = true;
+    return new Promise((resolve) => {
+        video.onloadedmetadata = () => {
+            video.width = video.videoWidth;
+            video.height = video.videoHeight;
+            resolve(video);
+        };
+    });
+  }
+
+  createDisplay(video: HTMLVideoElement, Id: string): CanvasRenderingContext2D | null { //could combine createDisplay and setDisplay with optional params
     let canvas = document.createElement("canvas")
     canvas.setAttribute('id', Id);
     document.body.appendChild(canvas);
-    canvas.style.height = `${video.height.toString()}px`
-    canvas.style.width = `${video.width.toString()}px`
+    // canvas.style.height = `${video.height.toString()}px`
+    // canvas.style.width = `${video.width.toString()}px`
     canvas.height = video.height;
     canvas.width = video.width;
     //const ctx = canvas.getContext('2d')
@@ -81,18 +99,36 @@ export class Eyetracker {
     return ctx;
   }
 
-  showDisplay(height: number, width: number, Id: string, stream: MediaStream): HTMLVideoElement {
-    let video = document.createElement('video')
-    video.setAttribute('id', Id)
-    document.body.appendChild(video)
-    video.style.transform = 'scaleX(-1)'
-    video.style.height = `${height.toString()}px`
-    video.style.width = `${width.toString()}px`
-    video.height = height;
-    video.width = width;
-    video.autoplay = true;
-    video.srcObject = stream
-    return video
+  setDisplay(video: HTMLVideoElement, canvas: HTMLCanvasElement): CanvasRenderingContext2D | null {
+    canvas.height = video.height
+    canvas.width = video.width
+    var ctx = canvas.getContext('2d');
+    if (ctx != null) {
+      ctx.translate(canvas.width, 0);
+      ctx.scale(-1, 1);
+      ctx.fillStyle = "green";
+    }
+    return ctx;
+  }
+
+  showDisplay(ctx: CanvasRenderingContext2D, video: HTMLVideoElement) {
+    ctx.drawImage(video, 0, 0)
+  }
+
+  async createOverlay(ctx: CanvasRenderingContext2D, detector: FaceLandmarksDetector, video: HTMLVideoElement): Promise<any> {
+    const coordinates = (await detector.estimateFaces(video))[0]
+    const boxCoords = coordinates.box
+    const keypoints = coordinates.keypoints
+    if (boxCoords) {
+      this.showDisplay(ctx, video)
+      ctx.beginPath()
+      ctx.lineWidth = 6
+      ctx.rect(boxCoords.xMin, boxCoords.yMin, (boxCoords.xMax - boxCoords.xMin), (boxCoords.yMax - boxCoords.yMin))
+      ctx.stroke()
+      window.requestAnimationFrame(await this.createOverlay(ctx, detector, video));
+    } else {
+      window.requestAnimationFrame(await this.createOverlay(ctx, detector, video));
+    }
   }
 
   // async setFaceLandmarkDetectionModel() {
@@ -124,7 +160,7 @@ export class Eyetracker {
     const faces = await detector.estimateFaces(video, { flipHorizontal: true })
     if (faces.length > 0) {
       console.log('FACE DETECTED');
-      // console.log(faces)
+      console.log(faces)
     }
     else { console.log('Waiting for faces...') }
     window.requestAnimationFrame(await this.isFaceValid(video, detector));

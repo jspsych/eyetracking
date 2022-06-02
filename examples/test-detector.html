@@ -27,7 +27,7 @@
       const stream = await Eyetracker.setCamera(await test[0]);
       console.log('Source Object Captured...');
 
-      const video = await Eyetracker.showDisplay(300, 400, 'test video', stream);
+      const video = await Eyetracker.createVideo(600, 500, 'test video', stream);
       console.log('Video Element Created...');
 
       const ctx = await Eyetracker.createDisplay(video, 'test canvas');
@@ -36,9 +36,11 @@
       const detector = await Eyetracker.faceLandmarkDetection()
       console.log('Detector Created...')
 
+      await Eyetracker.createOverlay(ctx, detector, video)
+
       Eyetracker.isFaceValid(video, detector);
     }
-    catch (err) { console.log('No Cameras Available!') }
+    catch (err) { console.log(err) }
 
   }
 
