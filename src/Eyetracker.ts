@@ -16,17 +16,6 @@ export class Eyetracker {
   private detector: FaceLandmarksDetector | undefined;
   private ctx: CanvasRenderingContext2D | undefined;
 
-  async init() {
-    const model = SupportedModels.MediaPipeFaceMesh;
-    const detectorConfig: MediaPipeFaceMeshTfjsModelConfig = {
-      runtime: "tfjs",
-      refineLandmarks: true,
-    };
-
-    const detector = await createDetector(model, detectorConfig);
-    console.log(detector);
-  }
-
   /**
    * This is a function to add two numbers together.
    *
@@ -44,14 +33,6 @@ export class Eyetracker {
 
   async getListOfCameras(): Promise<Array<MediaDeviceInfo>> {
     const devices = await navigator.mediaDevices.enumerateDevices();
-    // const cameraList: Array<String> = []
-    // for (let i = 0; i < devices.length; i++) {
-    //   if (devices[i].kind === "videoinput") {
-    //     cameraList.push(devices[i].deviceId)
-    //   }
-    // }
-    // return cameraList
-    // Take this approach? Where return type are 
     const videoDevices = devices.filter((d) => {
       d.kind === 'videoinput';
       return d.kind === 'videoinput';
@@ -61,20 +42,14 @@ export class Eyetracker {
   }
 
   async setCamera(device: MediaDeviceInfo) {
-    //console.log(device.deviceId)
-    // If getListOfCameras uses strings, then deviceId would just be set equal to the parameters
     this.stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: device.deviceId } });
   }
 
-
-  // async createVideo(height: number, width: number, Id: string) {
   async createVideo(Id: string) {
     let video = document.createElement('video');
     video.setAttribute('id', Id);
     document.body.appendChild(video);
     video.style.transform = 'scaleX(-1)';
-    // video.style.height = `${height.toString()}px`
-    // video.style.width = `${width.toString()}px`
     (video.srcObject as (undefined | MediaProvider | null)) = this.stream;
     video.autoplay = true;
     await new Promise((resolve) => {
@@ -87,17 +62,14 @@ export class Eyetracker {
     });
   }
 
-  createDisplay(Id: string) { //could combine createDisplay and setDisplay with optional params
+  createDisplay(Id: string) { 
     let canvas = document.createElement("canvas")
     canvas.setAttribute('id', Id);
     document.body.appendChild(canvas);
-    // canvas.style.height = `${video.height.toString()}px`
-    // canvas.style.width = `${video.width.toString()}px`
     if (this.video != null) {
       canvas.height = this.video.height;
       canvas.width = this.video.width;
       this.canvas = canvas;
-      //const ctx = canvas.getContext('2d')
       var ctx = canvas.getContext('2d');
       if (ctx != null) {
         ctx.translate(canvas.width, 0);
@@ -153,22 +125,7 @@ export class Eyetracker {
     catch (err) { this.showDisplay(); window.requestAnimationFrame(await this.createOverlay()); }
   }
 
-
-
-  // async setFaceLandmarkDetectionModel() {
-  //   const model = SupportedModels.MediaPipeFaceMesh;
-  //   const detectorConfig = {
-  //     runtime: 'mediapipe',
-  //     refineLandmarks: true,
-  //     maxFaces: 1,
-  //     solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh',
-  //                   // or 'base/node_modules/@mediapipe/face_mesh' in npm.
-  //   };
-  //   // @ts-ignore
-  //   return detector = await createDetector(model, detectorConfig);
-  // }
-
-  async faceLandmarkDetection() {
+  async init() {
     const model = SupportedModels.MediaPipeFaceMesh;
     const detectorConfig: MediaPipeFaceMeshTfjsModelConfig = {
       runtime: "tfjs",
