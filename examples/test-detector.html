@@ -1,46 +1,49 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <script src="../dist/bundle.js"></script>
-  </head>
-  <body></body>
-  <script>
-    var stream;
-    var Eyetracker = eyetrack.initEyetracker();
 
-    document.querySelector("body").innerHTML = `2 + 2 = ${Eyetracker.add(
-      2,
-      2
-    )}`;
+<head>
+  <script src="../dist/bundle.js"></script>
+</head>
+
+<body></body>
+<script>
+  var Eyetracker = eyetrack.initEyetracker();
+
+  document.querySelector("body").innerHTML = `2 + 2 = ${Eyetracker.add(
+    2,
+    2
+  )}`;
 
 
-    async function cameraSetup() {
-      await Eyetracker.getCameraPermission()
+  async function cameraSetup() {
+
+    try {
+      await Eyetracker.getCameraPermission();
+      console.log('Permission Acquired...');
+
       const test = await Eyetracker.getListOfCameras();
-      console.log('List of cameras available' + test);
-      // console.log(test)
-      // console.log(await Eyetracker.setCamera(await test[1]));
-      stream = await Eyetracker.setCamera(await test[0]);
+      console.log('List of Cameras Acquired...');
 
-      const video = await Eyetracker.showDisplay(300, 400, 'test', stream)
+      const stream = await Eyetracker.setCamera(await test[0]);
+      console.log('Source Object Captured...');
 
-      img = document.createElement('img')
-      img.crossOrigin = 'anonymous'
-      img.src = 'https://i0.wp.com/post.medicalnewstoday.com/wp-content/uploads/sites/3/2020/03/GettyImages-1092658864_hero-1024x575.jpg?w=1155&h=1528'
-      
-      document.body.appendChild(img)
+      const video = await Eyetracker.showDisplay(300, 400, 'test video', stream);
+      console.log('Video Element Created...');
+
+      const ctx = await Eyetracker.createDisplay(video, 'test canvas');
+      console.log('Canvas Element Created...')
 
       const detector = await Eyetracker.faceLandmarkDetection()
-      console.log(detector)
-      
-      console.log(await detector.estimateFaces(img))
+      console.log('Detector Created...')
+
+      Eyetracker.isFaceValid(video, detector);
     }
-    
-    cameraSetup()
+    catch (err) { console.log('No Cameras Available!') }
 
-    // canvas = Eyetracker.createDisplay(300, 400, 'test');
-    // console.log(canvas)
-    // document.body.appendChild(canvas);
+  }
 
-  </script>
+  cameraSetup()
+
+</script>
+
 </html>
