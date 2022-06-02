@@ -72,6 +72,7 @@ export class Eyetracker {
     // video.style.width = `${width.toString()}px`
     video.srcObject = stream;
     video.autoplay = true;
+    video.style.visibility = 'hidden';
     return new Promise((resolve) => {
         video.onloadedmetadata = () => {
             video.width = video.videoWidth;
@@ -117,9 +118,10 @@ export class Eyetracker {
 
   async createOverlay(ctx: CanvasRenderingContext2D, detector: FaceLandmarksDetector, video: HTMLVideoElement): Promise<any> {
     const coordinates = (await detector.estimateFaces(video))[0]
-    const boxCoords = coordinates.box
-    const keypoints = coordinates.keypoints
-    if (boxCoords) {
+    
+    if (coordinates) {
+      const boxCoords = coordinates.box
+      const keypoints = coordinates.keypoints
       this.showDisplay(ctx, video)
       ctx.beginPath()
       ctx.lineWidth = 6
@@ -127,6 +129,7 @@ export class Eyetracker {
       ctx.stroke()
       window.requestAnimationFrame(await this.createOverlay(ctx, detector, video));
     } else {
+      this.showDisplay(ctx, video)
       window.requestAnimationFrame(await this.createOverlay(ctx, detector, video));
     }
   }
