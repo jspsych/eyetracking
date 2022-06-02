@@ -24,21 +24,21 @@
       const test = await Eyetracker.getListOfCameras();
       console.log('List of Cameras Acquired...');
 
-      const stream = await Eyetracker.setCamera(await test[0]);
+      await Eyetracker.setCamera(await test[0]);
       console.log('Source Object Captured...');
 
-      const video = await Eyetracker.createVideo(600, 500, 'test video', stream);
+      await Eyetracker.createVideo('test video');
       console.log('Video Element Created...');
 
-      const ctx = await Eyetracker.createDisplay(video, 'test canvas');
+      await Eyetracker.createDisplay('test canvas');
       console.log('Canvas Element Created...')
 
-      const detector = await Eyetracker.faceLandmarkDetection()
+      await Eyetracker.faceLandmarkDetection()
       console.log('Detector Created...')
 
-      await Eyetracker.createOverlay(ctx, detector, video)
+      Eyetracker.createOverlay()
 
-      Eyetracker.isFaceValid(video, detector);
+      // Eyetracker.isFaceValid();
     }
     catch (err) { console.log(err) }
 

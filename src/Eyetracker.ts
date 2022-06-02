@@ -10,6 +10,12 @@ import "@mediapipe/face_mesh";
 
 export class Eyetracker {
 
+  private stream: MediaStream | undefined;
+  private video: HTMLVideoElement | undefined;
+  private canvas: HTMLCanvasElement | undefined;
+  private detector: FaceLandmarksDetector | undefined;
+  private ctx: CanvasRenderingContext2D | undefined;
+
   async init() {
     const model = SupportedModels.MediaPipeFaceMesh;
     const detectorConfig: MediaPipeFaceMeshTfjsModelConfig = {
@@ -32,14 +38,12 @@ export class Eyetracker {
     return a + b;
   }
 
-  async getCameraPermission(): Promise<any> {
-    let stream = null;
-    stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-    return stream;
+  async getCameraPermission() {
+    this.stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
   }
 
   async getListOfCameras(): Promise<Array<MediaDeviceInfo>> {
-    const devices = await navigator.mediaDevices.enumerateDevices()
+    const devices = await navigator.mediaDevices.enumerateDevices();
     // const cameraList: Array<String> = []
     // for (let i = 0; i < devices.length; i++) {
     //   if (devices[i].kind === "videoinput") {
@@ -49,55 +53,61 @@ export class Eyetracker {
     // return cameraList
     // Take this approach? Where return type are 
     const videoDevices = devices.filter((d) => {
-      d.kind === 'videoinput'
-      return d.kind === 'videoinput'
+      d.kind === 'videoinput';
+      return d.kind === 'videoinput';
     })
 
-    return videoDevices
+    return videoDevices;
   }
 
-  async setCamera(device: MediaDeviceInfo): Promise<MediaStream> {
+  async setCamera(device: MediaDeviceInfo) {
     //console.log(device.deviceId)
     // If getListOfCameras uses strings, then deviceId would just be set equal to the parameters
-    const stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: device.deviceId } })
-    return stream
+    this.stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: device.deviceId } });
   }
 
-  async createVideo(height: number, width: number, Id: string, stream: MediaStream): Promise<any> {
-    let video = document.createElement('video')
-    video.setAttribute('id', Id)
-    document.body.appendChild(video)
-    video.style.transform = 'scaleX(-1)'
+
+  // async createVideo(height: number, width: number, Id: string) {
+  async createVideo(Id: string) {
+    let video = document.createElement('video');
+    video.setAttribute('id', Id);
+    document.body.appendChild(video);
+    video.style.transform = 'scaleX(-1)';
     // video.style.height = `${height.toString()}px`
     // video.style.width = `${width.toString()}px`
-    video.srcObject = stream;
+    (video.srcObject as (undefined | MediaProvider | null)) = this.stream;
     video.autoplay = true;
-    video.style.visibility = 'hidden';
-    return new Promise((resolve) => {
-        video.onloadedmetadata = () => {
-            video.width = video.videoWidth;
-            video.height = video.videoHeight;
-            resolve(video);
-        };
+    await new Promise((resolve) => {
+      video.onloadedmetadata = () => {
+        video.width = video.videoWidth;
+        video.height = video.videoHeight;
+        resolve(video);
+      };
+      this.video = video;
     });
   }
 
-  createDisplay(video: HTMLVideoElement, Id: string): CanvasRenderingContext2D | null { //could combine createDisplay and setDisplay with optional params
+  createDisplay(Id: string) { //could combine createDisplay and setDisplay with optional params
     let canvas = document.createElement("canvas")
     canvas.setAttribute('id', Id);
     document.body.appendChild(canvas);
     // canvas.style.height = `${video.height.toString()}px`
     // canvas.style.width = `${video.width.toString()}px`
-    canvas.height = video.height;
-    canvas.width = video.width;
-    //const ctx = canvas.getContext('2d')
-    var ctx = canvas.getContext('2d');
-    if (ctx != null) {
-      ctx.translate(canvas.width, 0);
-      ctx.scale(-1, 1);
-      ctx.fillStyle = "green";
+    if (this.video != null) {
+      canvas.height = this.video.height;
+      canvas.width = this.video.width;
+      this.canvas = canvas;
+      //const ctx = canvas.getContext('2d')
+      var ctx = canvas.getContext('2d');
+      if (ctx != null) {
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1);
+        ctx.fillStyle = "green";
+        (this.ctx as (undefined | CanvasRenderingContext2D | null)) = ctx;
+      }
+      else { console.log('canvas.getContext(\'2d\') return null'); }
     }
-    return ctx;
+    else { console.log('Undefined Property \"this.video\"'); }
   }
 
   setDisplay(video: HTMLVideoElement, canvas: HTMLCanvasElement): CanvasRenderingContext2D | null {
@@ -112,27 +122,38 @@ export class Eyetracker {
     return ctx;
   }
 
-  showDisplay(ctx: CanvasRenderingContext2D, video: HTMLVideoElement) {
-    ctx.drawImage(video, 0, 0)
+  showDisplay() {
+    let ctx = this.ctx;
+    let video = this.video;
+    if ((ctx != undefined) && (video != undefined)) {
+      ctx.drawImage(video, 0, 0)
+    }
+    else { console.log('\"this.ctx\", \"this.video\" Undefined') }
   }
 
-  async createOverlay(ctx: CanvasRenderingContext2D, detector: FaceLandmarksDetector, video: HTMLVideoElement): Promise<any> {
-    const coordinates = (await detector.estimateFaces(video))[0]
-    
-    if (coordinates) {
-      const boxCoords = coordinates.box
-      const keypoints = coordinates.keypoints
-      this.showDisplay(ctx, video)
-      ctx.beginPath()
-      ctx.lineWidth = 6
-      ctx.rect(boxCoords.xMin, boxCoords.yMin, (boxCoords.xMax - boxCoords.xMin), (boxCoords.yMax - boxCoords.yMin))
-      ctx.stroke()
-      window.requestAnimationFrame(await this.createOverlay(ctx, detector, video));
-    } else {
-      this.showDisplay(ctx, video)
-      window.requestAnimationFrame(await this.createOverlay(ctx, detector, video));
+  async createOverlay(): Promise<any> {
+
+    try {
+      let ctx = this.ctx;
+      let video = this.video;
+      let detector = this.detector;
+
+      if ((detector != undefined) && (video != undefined) && (ctx != undefined)) {
+        const coordinates = (await detector.estimateFaces(video))[0];
+        const boxCoords = coordinates.box;
+        const keypoints = coordinates.keypoints;
+        this.showDisplay();
+        ctx.beginPath();;
+        ctx.rect(boxCoords.xMin, boxCoords.yMin, (boxCoords.xMax - boxCoords.xMin), (boxCoords.yMax - boxCoords.yMin));
+        ctx.stroke();
+        window.requestAnimationFrame(await this.createOverlay());
+      }
+      else { console.log('\"this.detector\", \"this.video\", \"this.ctx\" Undefined'); }
     }
+    catch (err) { this.showDisplay(); window.requestAnimationFrame(await this.createOverlay()); }
   }
+
+
 
   // async setFaceLandmarkDetectionModel() {
   //   const model = SupportedModels.MediaPipeFaceMesh;
@@ -154,18 +175,21 @@ export class Eyetracker {
       maxFaces: 1,
       refineLandmarks: true,
     };
-
-    const detector = await createDetector(model, detectorConfig);
-    return detector
+    this.detector = await createDetector(model, detectorConfig);
   }
 
-  async isFaceValid(video: HTMLVideoElement, detector: any): Promise<any> {
-    const faces = await detector.estimateFaces(video, { flipHorizontal: true })
-    if (faces.length > 0) {
-      console.log('FACE DETECTED');
-      console.log(faces)
+  async isFaceValid(): Promise<any> {
+    let detector = this.detector;
+    let video = this.video;
+    if ((detector != undefined) && (video != undefined)) {
+      const faces = await detector.estimateFaces(video, { flipHorizontal: true })
+      if (faces.length > 0) {
+        console.log('FACE DETECTED');
+        console.log(faces)
+      }
+      else { console.log('Waiting for faces...') }
+      window.requestAnimationFrame(await this.isFaceValid());
     }
-    else { console.log('Waiting for faces...') }
-    window.requestAnimationFrame(await this.isFaceValid(video, detector));
+    else { console.log('\"this.detector\", \"this.video\" Undefined') }
   }
 }
