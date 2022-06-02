@@ -66,6 +66,7 @@ export class Eyetracker {
     let canvas = document.createElement("canvas")
     canvas.setAttribute('id', Id);
     document.body.appendChild(canvas);
+    this.canvas = canvas
     if (this.video != null) {
       canvas.height = this.video.height;
       canvas.width = this.video.width;
@@ -85,6 +86,7 @@ export class Eyetracker {
   setDisplay(video: HTMLVideoElement, canvas: HTMLCanvasElement): CanvasRenderingContext2D | null {
     canvas.height = video.height
     canvas.width = video.width
+    this.canvas = canvas
     var ctx = canvas.getContext('2d');
     if (ctx != null) {
       ctx.translate(canvas.width, 0);
