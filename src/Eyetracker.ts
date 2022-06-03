@@ -115,6 +115,10 @@ export class Eyetracker {
     else { console.log('\"this.ctx\", \"this.video\" Undefined') }
   }
 
+  hideDisplay(canvas: HTMLCanvasElement) {
+      canvas.style.visibility = 'hidden'
+  }
+
   async createOverlay(): Promise<any> {
 
     try {
@@ -128,7 +132,7 @@ export class Eyetracker {
         const boxCoords = coordinates.box;
         const keypoints = coordinates.keypoints;
         ctx.drawImage(video, 0, 0)
-        for (let keypoint = 0; keypoint < keypoints.length; keypoint++) {
+        for (let keypoint = 468; keypoint < keypoints.length; keypoint++) {
           const x = keypoints[keypoint]['x']
           const y = keypoints[keypoint]['y']
  
