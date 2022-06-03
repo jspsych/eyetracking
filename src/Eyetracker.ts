@@ -8,6 +8,7 @@ import "@tensorflow/tfjs-core";
 import "@tensorflow/tfjs-backend-webgl";
 import "@mediapipe/face_mesh";
 
+
 export class Eyetracker {
 
   private stream: MediaStream | undefined;
@@ -52,7 +53,7 @@ export class Eyetracker {
     video.style.transform = 'scaleX(-1)';
     (video.srcObject as (undefined | MediaProvider | null)) = this.stream;
     video.autoplay = true;
-    await new Promise((resolve) => {
+    return new Promise((resolve) => {
       video.onloadedmetadata = () => {
         video.width = video.videoWidth;
         video.height = video.videoHeight;
@@ -77,8 +78,12 @@ export class Eyetracker {
         ctx.scale(-1, 1);
         ctx.fillStyle = "green";
         (this.ctx as (undefined | CanvasRenderingContext2D | null)) = ctx;
+        return canvas
       }
-      else { console.log('canvas.getContext(\'2d\') return null'); }
+      else { 
+        console.log('canvas.getContext(\'2d\') return null'); 
+        return canvas
+      }
     }
     else { console.log('Undefined Property \"this.video\"'); }
   }
@@ -119,13 +124,19 @@ export class Eyetracker {
       let detector = this.detector;
 
       if ((detector != undefined) && (video != undefined) && (ctx != undefined)) {
+        
         const coordinates = (await detector.estimateFaces(video))[0];
         const boxCoords = coordinates.box;
         const keypoints = coordinates.keypoints;
-        this.showDisplay();
-        ctx.beginPath();;
-        ctx.rect(boxCoords.xMin, boxCoords.yMin, (boxCoords.xMax - boxCoords.xMin), (boxCoords.yMax - boxCoords.yMin));
-        ctx.stroke();
+        ctx.drawImage(video, 0, 0)
+        for (let keypoint = 0; keypoint < keypoints.length; keypoint++) {
+          const x = keypoints[keypoint]['x']
+          const y = keypoints[keypoint]['y']
+ 
+          ctx.beginPath();
+          ctx.rect(x, y, 2, 2);
+          ctx.stroke();
+        }
         window.requestAnimationFrame(await this.createOverlay());
       }
       else { console.log('\"this.detector\", \"this.video\", \"this.ctx\" Undefined'); }
@@ -140,7 +151,9 @@ export class Eyetracker {
       maxFaces: 1,
       refineLandmarks: true,
     };
-    this.detector = await createDetector(model, detectorConfig);
+    const detector = await createDetector(model, detectorConfig);
+    this.detector = detector
+    return detector
   }
 
   async isFaceValid(): Promise<any> {
