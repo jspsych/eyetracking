@@ -89,8 +89,7 @@ export class Eyetracker {
   }
 
   // Need to test this out
-  setDisplay() {
-    let canvas = this.canvas;
+  setDisplay(canvas: HTMLCanvasElement) {
     let video = this.video;
     this.canvas = canvas;
     if ((canvas != undefined) && (video != undefined)) {
