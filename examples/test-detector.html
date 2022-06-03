@@ -1,54 +1,49 @@
 <!DOCTYPE html>
 <html>
+  <head>
+    <script src="../dist/bundle.js"></script>
+  </head>
 
-<head>
-  <script src="../dist/bundle.js"></script>
-</head>
+  <body></body>
+  <script>
+    var Eyetracker = eyetrack.initEyetracker();
 
-<body></body>
-<script>
-  var Eyetracker = eyetrack.initEyetracker();
+    document.querySelector("body").innerHTML = `2 + 2 = ${Eyetracker.add(
+      2,
+      2
+    )}`;
 
-  document.querySelector("body").innerHTML = `2 + 2 = ${Eyetracker.add(
-    2,
-    2
-  )}`;
+    async function cameraSetup() {
+      try {
+        await Eyetracker.getCameraPermission();
+        console.log("Permission Acquired...");
 
+        const test = await Eyetracker.getListOfCameras();
+        console.log("List of Cameras Acquired...");
 
-  async function cameraSetup() {
+        await Eyetracker.setCamera(await test[0]);
+        console.log("Source Object Captured...");
 
-    try {
-      await Eyetracker.getCameraPermission();
-      console.log('Permission Acquired...');
+        await Eyetracker.createVideo("test video");
+        //console.log(await Eyetracker.createVideo('test video'));
+        console.log("Video Element Created...");
 
-      const test = await Eyetracker.getListOfCameras();
-      console.log('List of Cameras Acquired...');
+        await Eyetracker.createDisplay("test canvas");
+        //console.log(await Eyetracker.createDisplay('test canvas'));
+        console.log("Canvas Element Created...");
 
-      await Eyetracker.setCamera(await test[0]);
-      console.log('Source Object Captured...');
+        await Eyetracker.init();
+        //console.log(await Eyetracker.init())
+        console.log("Detector Created...");
 
-      await Eyetracker.createVideo('test video');
-      //console.log(await Eyetracker.createVideo('test video'));
-      console.log('Video Element Created...');
+        Eyetracker.createOverlay();
 
-      await Eyetracker.createDisplay('test canvas');
-      //console.log(await Eyetracker.createDisplay('test canvas'));
-      console.log('Canvas Element Created...')
-
-      await Eyetracker.init()
-      //console.log(await Eyetracker.init())
-      console.log('Detector Created...')
-
-      Eyetracker.createOverlay()
-
-      // Eyetracker.isFaceValid();
+        // Eyetracker.isFaceValid();
+      } catch (err) {
+        console.log("An error has been detected: " + err);
+      }
     }
-    catch (err) { console.log(err) }
 
-  }
-
-  cameraSetup()
-
-</script>
-
+    cameraSetup();
+  </script>
 </html>
