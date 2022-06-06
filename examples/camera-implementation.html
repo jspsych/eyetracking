@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Test Camera</title>
+  <script src="../dist/bundle.js"></script>
+</head>
+<body>
+  <button id="askPerm" onclick="askPermission()">
+    Click me to ask for permission!
+  </button>
+</body>
+<script>
+  var Eyetracker = eyetrack.initEyetracker();
+
+  async function askPermission() {
+    await Eyetracker.getCameraPermission();
+    const btn = document.getElementById("askPerm");
+    btn.style.display = "none";
+  }
+</script>
