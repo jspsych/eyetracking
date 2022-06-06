@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="../dist/bundle.js"></script>
+  </head>
+
+  <body></body>
+  <script>
+      var Eyetracker = eyetrack.initEyetracker();
+
+    async function cameraSetup() {
+    try {
+        const test = await Eyetracker.getListOfCameras();
+        console.log("List of Cameras Acquired...");
+
+        await Eyetracker.setCamera(await test[0]);
+        console.log("Source Object Captured...");
+
+        await Eyetracker.createVideo("test video");
+        //console.log(await Eyetracker.createVideo('test video'));
+        console.log("Video Element Created...");
+
+        const detector = await Eyetracker.init();
+        //console.log(await Eyetracker.init())
+        console.log("Detector Created...");
+
+        const video = document.getElementById('test video')
+        
+        const canvas = await Eyetracker.createDisplay('test canvas')
+        const ctx = canvas.getContext('2d')
+        
+        //Would be CalibratePointFunction
+        let calibrations = []
+        button = document.createElement('button')
+        button.setAttribute('id', 'button')
+        button.onclick = async () => {
+            button.style.top = `${Math.random() * 1000}`
+            button.style.left = `${Math.random() * 1000}`
+
+            ctx.drawImage(video, 0, 0)
+            calibrations.push( 
+                {
+                    buttonX: button.getBoundingClientRect().x,
+                    buttonY: button.getBoundingClientRect().y,
+                    eyeCoords: await detector.estimateFaces(video)
+                }
+            )
+            console.log(calibrations[0]["eyeCoords"])
+
+            let keypoints = calibrations[calibrations.length - 1]["eyeCoords"][0]["keypoints"]
+            for (let keypoint = 468; keypoint < keypoints.length; keypoint++) {
+              const x = keypoints[keypoint]['x']
+              const y = keypoints[keypoint]['y']
+    
+              ctx.beginPath();
+              ctx.fillStyle = 'red'
+              ctx.fillRect(x, y, 2, 2);
+              ctx.stroke();
+            }
+        }
+        document.body.appendChild(button)
+
+        function clearCalibration() {
+          calibrations = []
+        }
+        
+
+    } catch (err) {
+        console.log("An error has been detected: " + err);
+    }
+    }
+
+    cameraSetup();
+  </script>
+</html>
