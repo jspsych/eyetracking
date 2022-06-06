@@ -33,24 +33,66 @@
         let canvas = document.createElement("canvas")
         canvas.setAttribute('id', 'Id');
         document.body.appendChild(canvas);
+
+        let imageCanvas = document.createElement("canvas");
+        imageCanvas.setAttribute('id', 'imageCanvas');
+        document.body.appendChild(imageCanvas);
+
         canvas.height = video.height;
         canvas.width = video.width;
+
+        imageCanvas.height = video.height;
+        imageCanvas.width = video.width;
+
         const ctx = canvas.getContext('2d');
+        const imgCtx = imageCanvas.getContext('2d');
+
+        imgCtx.translate(imageCanvas.width, 0);
+        imgCtx.scale(-1, 1)
+
         let x;
         let y;
-        setInterval(() => {
+        let calibrationPoints = [[10, 10], [10, 240], [10, 470], [320, 10], [320, 240], [320, 470], [630, 10], [630, 240], [630, 470]]
+        let associations = []
+        console.log(calibrationPoints)
+        setInterval(async () => {
+            
+            
+            imgCtx.drawImage(video, 0, 0, imageCanvas.width, imageCanvas.height)
+            let dataUrl = imageCanvas.toDataURL("image/jpeg")
+            let time = video.currentTime
+            let timestamp = { frame: dataUrl, time: time}
+            console.log(timestamp)
+            //console.log(dataUrl)
+            
             ctx.beginPath();
             ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-            x = Math.floor(Math.random() * 640)
-            y = Math.floor(Math.random() * 480)
+            let img = document.createElement('img')
+            img.height = video.height
+            img.width = video.width
+            img.src = dataUrl
+            document.body.appendChild(img)
+
+            console.log(await detector.estimateFaces(img))
+
+            // x = Math.floor(Math.random() * 640)
+            // y = Math.floor(Math.random() * 480)
+            console.log(calibrationPoints[0])
+            x = calibrationPoints[0][0]
+            y = calibrationPoints[0][1]
+            calibrationPoints.shift()
 
             ctx.beginPath();
             ctx.arc(x, y, 8, 0, 2 * Math.PI, true);
             ctx.fill();
         }, 3000)
-
         
+        function clearCalibration() {
+            calibrationPoints = []
+        }
+
+
         // let calibrations = []
         // button = document.createElement('button')
         // button.setAttribute('id', 'button')
