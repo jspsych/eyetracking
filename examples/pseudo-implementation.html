@@ -13,37 +13,33 @@
       // this method should return true immediately if permission already granted.
       const permission = await Eyetracker.getCameraPermission(); // need to check if they denied permission?
 
-      if(permission){
+      if (permission) {
         const deviceList = await Eyetracker.getListOfCameras();
 
-        if(deviceList.length == 1){
+        if (deviceList.length == 1) {
           Eyetracker.setCamera(deviceList[0]); // do this in a way that it can accept standard getUserMedia()
         } else {
           // select a device and use .setCamera()
         }
 
         const canvas = Eyetracker.createDisplay(); // returns a canvas object that we can add to the DOM
-        document.querySelector('body').innerHTML = canvas; // adds <canvas> to <body>
+        document.querySelector("body").innerHTML = canvas; // adds <canvas> to <body>
 
         // OR
 
-        Eyetracker.setDisplay(document.querySelector('canvas')); // takes existing <canvas> and sets it as display in Eyetracker class
+        Eyetracker.setDisplay(document.querySelector("canvas")); // takes existing <canvas> and sets it as display in Eyetracker class
 
         // this renders the video data onto the canvas in "real time"
-        Eyetracker.showDisplay(overlay?);
+        Eyetracker.showDisplay(overlay);
 
         // check for acceptable face detection
         const valid_face = await Eyetracker.isFaceValid(); // maybe async, maybe not?
 
         // stops rendering and sets canvas "display: none;"
         Eyetracker.hideDisplay();
-
       } else {
-
         // ability to ask for permission again?
-
       }
-
     }
 
     start();
