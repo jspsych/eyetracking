@@ -3,6 +3,7 @@
   <head>
     <script src="../dist/bundle.js"></script>
   </head>
+
   <body></body>
   <script>
     var Eyetracker = eyetrack.initEyetracker();
@@ -12,6 +13,39 @@
       2
     )}`;
 
-    Eyetracker.init();
+    async function cameraSetup() {
+      try {
+        await Eyetracker.getCameraPermission();
+        console.log("Permission Acquired...");
+
+        const test = await Eyetracker.getListOfCameras();
+        console.log("List of Cameras Acquired...");
+
+        await Eyetracker.setCamera(await test[0]);
+        console.log("Source Object Captured...");
+
+        await Eyetracker.createVideo("test video");
+        //console.log(await Eyetracker.createVideo('test video'));
+        console.log("Video Element Created...");
+
+        await Eyetracker.createDisplay("test canvas");
+        //console.log(await Eyetracker.createDisplay('test canvas'));
+        console.log("Canvas Element Created...");
+
+        await Eyetracker.init();
+        //console.log(await Eyetracker.init())
+        console.log("Detector Created...");
+
+        Eyetracker.createOverlay();
+
+        // Eyetracker.hideDisplay(document.getElementById('test canvas'))
+
+        // Eyetracker.isFaceValid();
+      } catch (err) {
+        console.log("An error has been detected: " + err);
+      }
+    }
+
+    cameraSetup();
   </script>
 </html>
