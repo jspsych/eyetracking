@@ -1,6 +1,6 @@
 import {
   SupportedModels,
-  MediaPipeFaceMeshTfjsModelConfig,
+  MediaPipeFaceMeshMediaPipeModelConfig,
   createDetector,
   FaceLandmarksDetector,
 } from "@tensorflow-models/face-landmarks-detection";
@@ -149,14 +149,13 @@ export class Eyetracker {
 
   async init() {
     const model = SupportedModels.MediaPipeFaceMesh;
-    const detectorConfig: MediaPipeFaceMeshTfjsModelConfig = {
-      runtime: "tfjs",
-      maxFaces: 1,
+    const detectorConfig: MediaPipeFaceMeshMediaPipeModelConfig = {
+      runtime: "mediapipe",
       refineLandmarks: true,
+      solutionPath: '../node_modules/@mediapipe/face_mesh',
     };
     const detector = await createDetector(model, detectorConfig);
-    this.detector = detector
-    return detector
+    this.detector = detector;
   }
 
   async isFaceValid(): Promise<any> {
