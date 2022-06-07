@@ -66,45 +66,50 @@
         let associations = []
         console.log(calibrationPoints)
         let i = 0
-        setInterval(async () => {
-            
-            
-            imgCtx.drawImage(video, 0, 0, imageCanvas.width, imageCanvas.height)
-            let dataUrl = imageCanvas.toDataURL("image/jpeg")
-            let time = video.currentTime
-            let timestamp = { frame: dataUrl, time: time}
-            console.log(timestamp)
-            //console.log(dataUrl)
-            
-            ctx.beginPath();
-            ctx.clearRect(0, 0, canvas.width, canvas.height)
-
-            let img = document.createElement('img')
-            img.setAttribute('id', `${i}`)
-            img.height = video.height
-            img.width = video.width
-            //img.crossOrigin = 'anonymous'
-            img.src = dataUrl
-            document.body.appendChild(img)
-
-            // imgCtx2.drawImage(img, 0, 0)
-            img.onload = async function() {
-              console.log(await (detector.estimateFaces(img)))
-            }
-            // x = Math.floor(Math.random() * 640)
-            // y = Math.floor(Math.random() * 480)
-            console.log(calibrationPoints[0])
-            x = calibrationPoints[0][0]
-            y = calibrationPoints[0][1]
-            calibrationPoints.shift()
-
-            ctx.beginPath();
-            ctx.arc(x, y, 8, 0, 2 * Math.PI, true);
-            ctx.fill();
-
-            i += 1
-        }, 3000)
         
+          setInterval(async () => {
+              
+            if (calibrationPoints) {
+              imgCtx.drawImage(video, 0, 0, imageCanvas.width, imageCanvas.height)
+              let dataUrl = imageCanvas.toDataURL("image/jpeg")
+              let time = video.currentTime
+              let timestamp = { frame: dataUrl, time: time}
+              console.log(timestamp)
+              //console.log(dataUrl)
+              
+              ctx.beginPath();
+              ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+              let img = document.createElement('img')
+              img.setAttribute('id', `${i}`)
+              img.height = video.height
+              img.width = video.width
+              //img.crossOrigin = 'anonymous'
+              img.src = dataUrl
+              document.body.appendChild(img)
+
+              // imgCtx2.drawImage(img, 0, 0)
+              img.onload = async function() {
+                console.log(await (detector.estimateFaces(img)))
+              }
+              // x = Math.floor(Math.random() * 640)
+              // y = Math.floor(Math.random() * 480)
+              console.log(calibrationPoints[0])
+              x = calibrationPoints[0][0]
+              y = calibrationPoints[0][1]
+              calibrationPoints.shift()
+              console.log(`calibration points ${calibrationPoints}`)
+
+              ctx.beginPath();
+              ctx.arc(x, y, 8, 0, 2 * Math.PI, true);
+              ctx.fill();
+
+              i += 1
+            } else {
+              console.log('else branch')
+            }
+          }, 3000)
+      
         function clearCalibration() {
             calibrationPoints = []
         }
