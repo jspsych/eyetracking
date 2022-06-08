@@ -16,6 +16,7 @@ export class Eyetracker {
   private canvas: HTMLCanvasElement | undefined;
   private detector: FaceLandmarksDetector | undefined;
   private ctx: CanvasRenderingContext2D | undefined;
+  private facialLandmarks: Array<Object> = [];
 
   /**
    * This is a function to add two numbers together.
@@ -140,11 +141,11 @@ export class Eyetracker {
           ctx.rect(x, y, 2, 2);
           ctx.stroke();
         }
-        window.requestAnimationFrame(await this.createOverlay());
+        window.requestAnimationFrame(this.createOverlay);
       }
       else { console.log('\"this.detector\", \"this.video\", \"this.ctx\" Undefined'); }
     }
-    catch (err) { this.showDisplay(); window.requestAnimationFrame(await this.createOverlay()); }
+    catch (err) { window.requestAnimationFrame(this.createOverlay); }
   }
 
   async init() {
@@ -157,6 +158,19 @@ export class Eyetracker {
     const detector = await createDetector(model, detectorConfig);
     this.detector = detector
     return detector
+  }
+
+  async detectFace(): Promise<any> {
+    let ctx = this.ctx;
+    let video = this.video;
+    let detector = this.detector;
+
+    if ((detector != undefined) && (video != undefined) && (ctx != undefined)) {
+      this.facialLandmarks = (await detector.estimateFaces(video));
+      return this.facialLandmarks
+    } else {
+      console.log('\"this.detector\", \"this.video\", \"this.ctx\" Undefined');
+    }
   }
 
   async isFaceValid(): Promise<any> {
