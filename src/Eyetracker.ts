@@ -16,6 +16,7 @@ export class Eyetracker {
   private canvas: HTMLCanvasElement | undefined;
   private detector: FaceLandmarksDetector | undefined;
   private ctx: CanvasRenderingContext2D | undefined;
+  private calibrationPoints: Array<object> = [];
 
   /**
    * This is a function to add two numbers together.
@@ -172,5 +173,14 @@ export class Eyetracker {
       window.requestAnimationFrame(await this.isFaceValid());
     }
     else { console.log('\"this.detector\", \"this.video\" Undefined') }
+  }
+
+  async calibratePoint(x: number, y:number, element: (HTMLCanvasElement | HTMLVideoElement | HTMLImageElement)): Promise<void> {
+    let point = {'x': x, 'y': y, 'facialCoordinates': (await this.detector?.estimateFaces(element))}
+    this.calibrationPoints.push(point)
+  }
+
+  clearCalibration(): void {
+    this.calibrationPoints = []
   }
 }
