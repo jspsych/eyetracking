@@ -7,6 +7,7 @@ import {
 import "@tensorflow/tfjs-core";
 import "@tensorflow/tfjs-backend-webgl";
 import "@mediapipe/face_mesh";
+import { AnyInputs } from "@tensorflow/tfjs-core";
 
 
 export class Eyetracker {
@@ -16,7 +17,7 @@ export class Eyetracker {
   private canvas: HTMLCanvasElement | undefined;
   private detector: FaceLandmarksDetector | undefined;
   private ctx: CanvasRenderingContext2D | undefined;
-  private facialLandmarks: Array<Object> = [];
+  private facialLandmarks: Array<any> = [{box: Object, keypoints: Array}];
 
   /**
    * This is a function to add two numbers together.
@@ -120,19 +121,18 @@ export class Eyetracker {
       canvas.style.visibility = 'hidden'
   }
 
-  async createOverlay(): Promise<any> {
-
+  createOverlay(): void {
     try {
       let ctx = this.ctx;
       let video = this.video;
       let detector = this.detector;
 
       if ((detector != undefined) && (video != undefined) && (ctx != undefined)) {
-        
-        const coordinates = (await detector.estimateFaces(video))[0];
+        const coordinates = this.facialLandmarks[0];
         const boxCoords = coordinates.box;
         const keypoints = coordinates.keypoints;
         ctx.drawImage(video, 0, 0)
+        console.log('overlay')
         for (let keypoint = 468; keypoint < keypoints.length; keypoint++) {
           const x = keypoints[keypoint]['x']
           const y = keypoints[keypoint]['y']
@@ -141,11 +141,11 @@ export class Eyetracker {
           ctx.rect(x, y, 2, 2);
           ctx.stroke();
         }
-        window.requestAnimationFrame(this.createOverlay);
+        window.requestAnimationFrame(this.createOverlay.bind(this));
       }
       else { console.log('\"this.detector\", \"this.video\", \"this.ctx\" Undefined'); }
     }
-    catch (err) { window.requestAnimationFrame(this.createOverlay); }
+    catch (err) { console.log(err); window.requestAnimationFrame(this.createOverlay.bind(this)); }
   }
 
   async init() {
@@ -167,7 +167,7 @@ export class Eyetracker {
 
     if ((detector != undefined) && (video != undefined) && (ctx != undefined)) {
       this.facialLandmarks = (await detector.estimateFaces(video));
-      return this.facialLandmarks
+      //window.requestAnimationFrame(this.detectFace.bind(this))
     } else {
       console.log('\"this.detector\", \"this.video\", \"this.ctx\" Undefined');
     }
