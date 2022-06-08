@@ -113,6 +113,7 @@ export class Eyetracker {
     let video = this.video;
     if ((ctx != undefined) && (video != undefined)) {
       ctx.drawImage(video, 0, 0)
+      window.requestAnimationFrame(this.showDisplay.bind(this));
     }
     else { console.log('\"this.ctx\", \"this.video\" Undefined') }
   }
@@ -131,7 +132,6 @@ export class Eyetracker {
         const coordinates = this.facialLandmarks[0];
         const boxCoords = coordinates.box;
         const keypoints = coordinates.keypoints;
-        ctx.drawImage(video, 0, 0)
         console.log('overlay')
         for (let keypoint = 468; keypoint < keypoints.length; keypoint++) {
           const x = keypoints[keypoint]['x']
@@ -166,8 +166,8 @@ export class Eyetracker {
     let detector = this.detector;
 
     if ((detector != undefined) && (video != undefined) && (ctx != undefined)) {
-      this.facialLandmarks = (await detector.estimateFaces(video));
-      //window.requestAnimationFrame(this.detectFace.bind(this))
+      detector.estimateFaces(video)
+        .then((value) => this.facialLandmarks = value);
     } else {
       console.log('\"this.detector\", \"this.video\", \"this.ctx\" Undefined');
     }
