@@ -117,7 +117,7 @@ export class Eyetracker {
       if (this.faces.length > 0) {
         const coordinates = this.faces[0];
         const keypoints = coordinates.keypoints;
-        for (let keypoint = 468; keypoint < keypoints.length; keypoint++) {
+        for (let keypoint = 0; keypoint < keypoints.length; keypoint++) {
           const x = keypoints[keypoint]['x']
           const y = keypoints[keypoint]['y']
           this.ctx.beginPath();
