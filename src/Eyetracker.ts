@@ -16,6 +16,7 @@ export class Eyetracker {
   private canvas: HTMLCanvasElement | undefined;
   private detector: FaceLandmarksDetector | undefined;
   private ctx: CanvasRenderingContext2D | undefined;
+  private faces: Array<any> | undefined;
 
   /**
    * This is a function to add two numbers together.
@@ -80,8 +81,8 @@ export class Eyetracker {
         (this.ctx as (undefined | CanvasRenderingContext2D | null)) = ctx;
         return canvas
       }
-      else { 
-        console.log('canvas.getContext(\'2d\') return null'); 
+      else {
+        console.log('canvas.getContext(\'2d\') return null');
         return canvas
       }
     }
@@ -106,45 +107,70 @@ export class Eyetracker {
     else { console.log('/"this.canvas/", /"this.video/" Undefined'); }
   }
 
-  showDisplay() {
-    let ctx = this.ctx;
-    let video = this.video;
-    if ((ctx != undefined) && (video != undefined)) {
-      ctx.drawImage(video, 0, 0)
-    }
-    else { console.log('\"this.ctx\", \"this.video\" Undefined') }
-  }
-
   hideDisplay(canvas: HTMLCanvasElement) {
-      canvas.style.visibility = 'hidden'
+    canvas.style.visibility = 'hidden'
   }
 
-  async createOverlay(): Promise<any> {
-
-    try {
-      let ctx = this.ctx;
-      let video = this.video;
-      let detector = this.detector;
-
+  async createOverlay(ctx: CanvasRenderingContext2D | undefined, video: HTMLVideoElement | undefined, detector: FaceLandmarksDetector | undefined): Promise<any> {
+    if(this.faces != undefined) {
       if ((detector != undefined) && (video != undefined) && (ctx != undefined)) {
-        
-        const coordinates = (await detector.estimateFaces(video))[0];
-        const boxCoords = coordinates.box;
+        const coordinates = this.faces[0];
+        // const boxCoords = coordinates.box;
         const keypoints = coordinates.keypoints;
         ctx.drawImage(video, 0, 0)
         for (let keypoint = 468; keypoint < keypoints.length; keypoint++) {
           const x = keypoints[keypoint]['x']
           const y = keypoints[keypoint]['y']
- 
+
           ctx.beginPath();
           ctx.rect(x, y, 2, 2);
           ctx.stroke();
-        }
-        window.requestAnimationFrame(await this.createOverlay());
+        };
       }
       else { console.log('\"this.detector\", \"this.video\", \"this.ctx\" Undefined'); }
     }
-    catch (err) { this.showDisplay(); window.requestAnimationFrame(await this.createOverlay()); }
+    else {
+      if ((ctx != undefined) && (video != undefined)) {
+        ctx.drawImage(video, 0, 0);
+      }
+      else { console.log('\"this.video\", \"this.ctx\" Undefined'); }
+    }
+    console.log('createOverlay() is called');
+  }
+
+  async detectFaces(video: HTMLVideoElement | undefined, detector: FaceLandmarksDetector | undefined): Promise<any> {
+    if ((video != undefined) && (detector != undefined)) {
+      this.faces = await detector.estimateFaces(video);
+    }
+    else {
+      this.faces = undefined;
+      console.log('\"this.detector\", \"this.video\" Undefined');
+    }
+    console.log('detectFaces() is called')
+  }
+
+  async detectAndDraw(ctx: CanvasRenderingContext2D | undefined, video: HTMLVideoElement | undefined, detector: FaceLandmarksDetector | undefined, draw: boolean) {
+    await this.detectFaces(video, detector);
+    if (draw) {
+      if ((ctx != undefined) && (video != undefined) && (detector != undefined)) {
+        await this.createOverlay(ctx, video, detector);
+      } else {
+        console.log('\"this.ctx\", \"this.video\", \"this.detector\" Undefined');
+      }
+    }
+  }
+
+  async keypointsAnimation(draw: boolean) {
+    let ctx = this.ctx;
+    let video = this.video;
+    let detector = this.detector;
+    if ((ctx != undefined) && (video != undefined) && (detector != undefined)) {
+      try {
+      requestAnimationFrame(async () => { return await this.detectAndDraw(ctx, video, detector, draw) });
+      }
+      catch(err) { console.log('fa')}
+    }
+    else { console.log('\"this.ctx\", \"this.video\", \"this.detector\" Undefined'); }
   }
 
   async init() {
@@ -157,20 +183,5 @@ export class Eyetracker {
     const detector = await createDetector(model, detectorConfig);
     this.detector = detector
     return detector
-  }
-
-  async isFaceValid(): Promise<any> {
-    let detector = this.detector;
-    let video = this.video;
-    if ((detector != undefined) && (video != undefined)) {
-      const faces = await detector.estimateFaces(video, { flipHorizontal: true })
-      if (faces.length > 0) {
-        console.log('FACE DETECTED');
-        console.log(faces)
-      }
-      else { console.log('Waiting for faces...') }
-      window.requestAnimationFrame(await this.isFaceValid());
-    }
-    else { console.log('\"this.detector\", \"this.video\" Undefined') }
   }
 }
