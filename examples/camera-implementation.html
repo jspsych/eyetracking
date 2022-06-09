@@ -17,6 +17,7 @@
     await Eyetracker.getCameraPermission();
     const btn = document.getElementById("askPerm");
     btn.style.display = "none";
+    cameraSelector();
   }
 
   async function cameraSelector() {
@@ -34,5 +35,4 @@
   }
 
   askPermission;
-  cameraSelector();
 </script>
