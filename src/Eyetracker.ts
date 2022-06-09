@@ -108,69 +108,40 @@ export class Eyetracker {
   }
 
   hideDisplay(canvas: HTMLCanvasElement) {
-    canvas.style.visibility = 'hidden'
+    canvas.style.visibility = 'hidden';
   }
 
-  async createOverlay(ctx: CanvasRenderingContext2D | undefined, video: HTMLVideoElement | undefined, detector: FaceLandmarksDetector | undefined): Promise<any> {
-    if(this.faces != undefined) {
-      if ((detector != undefined) && (video != undefined) && (ctx != undefined)) {
+  async createOverlay(): Promise<void> {
+    if ((this.detector != undefined) && (this.video != undefined) && (this.ctx != undefined) && (this.faces != undefined)) {
+      this.ctx.drawImage(this.video, 0, 0)
+      if (this.faces.length > 0) {
         const coordinates = this.faces[0];
-        // const boxCoords = coordinates.box;
         const keypoints = coordinates.keypoints;
-        ctx.drawImage(video, 0, 0)
         for (let keypoint = 468; keypoint < keypoints.length; keypoint++) {
           const x = keypoints[keypoint]['x']
           const y = keypoints[keypoint]['y']
-
-          ctx.beginPath();
-          ctx.rect(x, y, 2, 2);
-          ctx.stroke();
-        };
-      }
-      else { console.log('\"this.detector\", \"this.video\", \"this.ctx\" Undefined'); }
-    }
-    else {
-      if ((ctx != undefined) && (video != undefined)) {
-        ctx.drawImage(video, 0, 0);
-      }
-      else { console.log('\"this.video\", \"this.ctx\" Undefined'); }
-    }
-    console.log('createOverlay() is called');
-  }
-
-  async detectFaces(video: HTMLVideoElement | undefined, detector: FaceLandmarksDetector | undefined): Promise<any> {
-    if ((video != undefined) && (detector != undefined)) {
-      this.faces = await detector.estimateFaces(video);
-    }
-    else {
-      this.faces = undefined;
-      console.log('\"this.detector\", \"this.video\" Undefined');
-    }
-    console.log('detectFaces() is called')
-  }
-
-  async detectAndDraw(ctx: CanvasRenderingContext2D | undefined, video: HTMLVideoElement | undefined, detector: FaceLandmarksDetector | undefined, draw: boolean) {
-    await this.detectFaces(video, detector);
-    if (draw) {
-      if ((ctx != undefined) && (video != undefined) && (detector != undefined)) {
-        await this.createOverlay(ctx, video, detector);
-      } else {
-        console.log('\"this.ctx\", \"this.video\", \"this.detector\" Undefined');
+          this.ctx.beginPath();
+          this.ctx.rect(x, y, 2, 2);
+          this.ctx.stroke();
+        }
       }
     }
   }
 
-  async keypointsAnimation(draw: boolean) {
-    let ctx = this.ctx;
-    let video = this.video;
-    let detector = this.detector;
-    if ((ctx != undefined) && (video != undefined) && (detector != undefined)) {
-      try {
-      requestAnimationFrame(async () => { return await this.detectAndDraw(ctx, video, detector, draw) });
-      }
-      catch(err) { console.log('fa')}
+  async detectFaces(): Promise<void> {
+    if ((this.video != undefined) && (this.detector != undefined)) {
+      this.faces = await this.detector.estimateFaces(this.video);
     }
-    else { console.log('\"this.ctx\", \"this.video\", \"this.detector\" Undefined'); }
+  }
+
+  async detectAndDraw(draw: boolean): Promise<void> {
+    await this.detectFaces();
+    if (draw) { await this.createOverlay(); }
+  }
+
+  async keypointsAnimation(draw: boolean): Promise<void> {
+    await this.detectAndDraw(draw);
+    requestAnimationFrame(() => this.keypointsAnimation(draw));
   }
 
   async init() {
