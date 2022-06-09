@@ -112,7 +112,7 @@ export class Eyetracker {
   }
 
   async createOverlay(): Promise<void> {
-    if ((this.detector != undefined) && (this.video != undefined) && (this.ctx != undefined) && (this.faces != undefined)) {
+    if ((this.video != undefined) && (this.ctx != undefined) && (this.faces != undefined)) {
       this.ctx.drawImage(this.video, 0, 0)
       if (this.faces.length > 0) {
         const coordinates = this.faces[0];
