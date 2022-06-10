@@ -14,13 +14,14 @@
   btn.addEventListener("click", askPermission);
 
   async function askPermission() {
+    await Eyetracker.init();
     await Eyetracker.getCameraPermission();
     const btn = document.getElementById("askPerm");
     btn.remove();
-    cameraSelector();
+    updateCameraSelect();
   }
 
-  async function cameraSelector() {
+  async function updateCameraSelect() {
     const devices = await Eyetracker.getListOfCameras();
     console.log(devices[0]);
     const selector = document.createElement("select");
@@ -38,7 +39,27 @@
 
       selector.appendChild(op);
     });
+    document.body.innerHTML = `
+    <p>Please select the camera you'd like to use.</p>
+    `;
     document.body.appendChild(selector);
+
+    const btnSelect = document.createElement("button");
+    btnSelect.id = "btnSelect";
+    btnSelect.innerHTML = "SELECT";
+    btnSelect.addEventListener("click", startDetection);
+    document.body.appendChild(btnSelect);
+  }
+
+  async function startDetection() {
+    const selector = document.getElementById("cameraList");
+    const id = selector.options[selector.selectedIndex].value;
+    await Eyetracker.setCamera(
+      await navigator.mediaDevices.getUserMedia({ video: { deviceId: id } })
+    );
+    await Eyetracker.createVideo("test video");
+    await Eyetracker.createDisplay("test canvas");
+    Eyetracker.keypointsAnimation(true);
   }
 
   askPermission;
