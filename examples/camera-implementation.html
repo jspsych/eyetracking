@@ -8,7 +8,6 @@
   <button id="askPerm" onclick="askPermission()">
     Click me to ask for permission!
   </button>
-  <select name="cameras" id="cameraList" style="visibility: collapse"></select>
 </body>
 <script>
   var Eyetracker = eyetrack.initEyetracker();
@@ -16,14 +15,21 @@
   async function askPermission() {
     await Eyetracker.getCameraPermission();
     const btn = document.getElementById("askPerm");
-    btn.style.display = "none";
+    btn.remove();
     cameraSelector();
   }
 
   async function cameraSelector() {
     const devices = await Eyetracker.getListOfCameras();
     console.log(devices[0]);
-    const selector = document.getElementById("cameraList");
+    const selector = document.createElement("select");
+    selector.id = "cameraList";
+    selector.name = "cameras";
+
+    const blank = document.createElement("option");
+    blank.style.display = "none";
+    selector.appendChild(blank);
+
     devices.forEach((d) => {
       let op = document.createElement("option");
       op.value = d.deviceId;
@@ -31,7 +37,7 @@
 
       selector.appendChild(op);
     });
-    selector.style.visibility = "visible";
+    document.body.appendChild(selector);
   }
 
   askPermission;
