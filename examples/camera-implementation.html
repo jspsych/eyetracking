@@ -5,12 +5,13 @@
   <script src="../dist/bundle.js"></script>
 </head>
 <body>
-  <button id="askPerm" onclick="askPermission()">
-    Click me to ask for permission!
-  </button>
+  <button id="askPerm">Click me to ask for permission!</button>
 </body>
 <script>
   var Eyetracker = eyetrack.initEyetracker();
+
+  const btn = document.getElementById("askPerm");
+  btn.addEventListener("click", askPermission);
 
   async function askPermission() {
     await Eyetracker.getCameraPermission();
