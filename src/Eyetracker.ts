@@ -7,52 +7,63 @@ import {
 import "@tensorflow/tfjs-core";
 import "@tensorflow/tfjs-backend-webgl";
 import "@mediapipe/face_mesh";
-
+import DemoWorker from "web-worker:./Worker.js";
 
 export class Eyetracker {
-
   private stream: MediaStream | undefined;
   private video: HTMLVideoElement | undefined;
   private canvas: HTMLCanvasElement | undefined;
   private detector: FaceLandmarksDetector | undefined;
   private ctx: CanvasRenderingContext2D | undefined;
+  private worker: Worker | undefined;
+
+  constructor() {
+    this.worker = new DemoWorker();
+    this.worker.addEventListener("message", (e) => {
+      console.log(e.data);
+    });
+  }
+
+  foo() {
+    this.worker?.postMessage({ cmd: "foo" });
+  }
+
   private faces: Array<any> | undefined;
 
-  /**
-   * This is a function to add two numbers together.
-   *
-   * @param a A number to add
-   * @param b A number to add
-   * @returns The sum of both numbers
-   */
-  add(a: number, b: number): number {
-    return a + b;
+
+  bar() {
+    this.worker?.postMessage({ cmd: "bar" });
   }
 
   async getCameraPermission() {
-    this.stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+    this.stream = await navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: false,
+    });
   }
 
   async getListOfCameras(): Promise<Array<MediaDeviceInfo>> {
     const devices = await navigator.mediaDevices.enumerateDevices();
     const videoDevices = devices.filter((d) => {
-      d.kind === 'videoinput';
-      return d.kind === 'videoinput';
-    })
+      d.kind === "videoinput";
+      return d.kind === "videoinput";
+    });
 
     return videoDevices;
   }
 
   async setCamera(device: MediaDeviceInfo) {
-    this.stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: device.deviceId } });
+    this.stream = await navigator.mediaDevices.getUserMedia({
+      video: { deviceId: device.deviceId },
+    });
   }
 
   async createVideo(Id: string) {
-    let video = document.createElement('video');
-    video.setAttribute('id', Id);
+    let video = document.createElement("video");
+    video.setAttribute("id", Id);
     document.body.appendChild(video);
-    video.style.transform = 'scaleX(-1)';
-    (video.srcObject as (undefined | MediaProvider | null)) = this.stream;
+    video.style.transform = "scaleX(-1)";
+    (video.srcObject as undefined | MediaProvider | null) = this.stream;
     video.autoplay = true;
     return new Promise((resolve) => {
       video.onloadedmetadata = () => {
@@ -65,47 +76,49 @@ export class Eyetracker {
   }
 
   createDisplay(Id: string) {
-    let canvas = document.createElement("canvas")
-    canvas.setAttribute('id', Id);
+    let canvas = document.createElement("canvas");
+    canvas.setAttribute("id", Id);
     document.body.appendChild(canvas);
-    this.canvas = canvas
+    this.canvas = canvas;
     if (this.video != null) {
       canvas.height = this.video.height;
       canvas.width = this.video.width;
       this.canvas = canvas;
-      var ctx = canvas.getContext('2d');
+      var ctx = canvas.getContext("2d");
       if (ctx != null) {
         ctx.translate(canvas.width, 0);
         ctx.scale(-1, 1);
         ctx.fillStyle = "green";
-        (this.ctx as (undefined | CanvasRenderingContext2D | null)) = ctx;
-        return canvas
+        (this.ctx as undefined | CanvasRenderingContext2D | null) = ctx;
+        return canvas;
+      } else {
+        console.log("canvas.getContext('2d') return null");
+        return canvas;
       }
-      else {
-        console.log('canvas.getContext(\'2d\') return null');
-        return canvas
-      }
+    } else {
+      console.log('Undefined Property "this.video"');
     }
-    else { console.log('Undefined Property \"this.video\"'); }
   }
 
   // Need to test this out
   setDisplay(canvas: HTMLCanvasElement) {
     let video = this.video;
     this.canvas = canvas;
-    if ((canvas != undefined) && (video != undefined)) {
-      canvas.height = video.height
-      canvas.width = video.width
-      var ctx = canvas.getContext('2d');
+    if (canvas != undefined && video != undefined) {
+      canvas.height = video.height;
+      canvas.width = video.width;
+      var ctx = canvas.getContext("2d");
       if (ctx != null) {
         ctx.translate(canvas.width, 0);
         ctx.scale(-1, 1);
         ctx.fillStyle = "green";
       }
-      (this.ctx as (undefined | CanvasRenderingContext2D | null)) = ctx;
+      (this.ctx as undefined | CanvasRenderingContext2D | null) = ctx;
+    } else {
+      console.log('/"this.canvas/", /"this.video/" Undefined');
     }
-    else { console.log('/"this.canvas/", /"this.video/" Undefined'); }
   }
+
 
   hideDisplay(canvas: HTMLCanvasElement) {
     canvas.style.visibility = 'hidden';
@@ -152,7 +165,8 @@ export class Eyetracker {
       refineLandmarks: true,
     };
     const detector = await createDetector(model, detectorConfig);
-    this.detector = detector
-    return detector
+    this.detector = detector;
+    return detector;
   }
+
 }
