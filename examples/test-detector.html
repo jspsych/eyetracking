@@ -36,11 +36,8 @@
         //console.log(await Eyetracker.init())
         console.log("Detector Created...");
 
-        Eyetracker.createOverlay();
+        Eyetracker.keypointsAnimation(true);
 
-        // Eyetracker.hideDisplay(document.getElementById('test canvas'))
-
-        // Eyetracker.isFaceValid();
       } catch (err) {
         console.log("An error has been detected: " + err);
       }
