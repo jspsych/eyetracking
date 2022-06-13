@@ -119,13 +119,10 @@ export class Eyetracker {
     try {
       let ctx = this.ctx;
       let video = this.video;
-      //let detector = this.detector;
 
       if (this.overlay && this.facialLandmarks.length > 0 && (video != undefined) && (ctx != undefined)) {
         const coordinates = this.facialLandmarks;
-        //const boxCoords = coordinates.box;
         const keypoints = coordinates;
-        //console.log('overlay')
         for(let i = 0; i < 478; i++) {
           let x = keypoints[i][0];
           let y = keypoints[i][1];
@@ -162,6 +159,13 @@ export class Eyetracker {
     } else {
       this.facialLandmarks = []
     }
+  }
+
+  async generateFaceMesh(): Promise<void> {
+      await this.detectFace()
+      this.showDisplay();
+      this.createOverlay();
+      window.requestAnimationFrame(this.generateFaceMesh.bind(this))
   }
 
   // async isFaceValid(): Promise<any> {
