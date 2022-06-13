@@ -9,6 +9,7 @@ export class Eyetracker {
   private video: HTMLVideoElement | undefined;
   private canvas: HTMLCanvasElement | undefined;
   private ctx: CanvasRenderingContext2D | undefined;
+  private calibrationPoints: Array<object> = [];
   private facialLandmarks: Array<any> = [{box: Object, keypoints: Array}];
   private model: any | undefined;
   private overlay: boolean = true;
@@ -159,6 +160,15 @@ export class Eyetracker {
     } else {
       this.facialLandmarks = []
     }
+  }
+
+  async calibratePoint(x: number, y:number, element: (HTMLCanvasElement | HTMLVideoElement | HTMLImageElement)): Promise<void> {
+    let point = {'x': x, 'y': y, 'facialCoordinates': (await this.detector?.estimateFaces(element))}
+    this.calibrationPoints.push(point)
+  }
+
+  clearCalibration(): void {
+    this.calibrationPoints = []
   }
 
   async generateFaceMesh(): Promise<void> {
