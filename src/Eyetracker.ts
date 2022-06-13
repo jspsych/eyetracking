@@ -107,7 +107,6 @@ export class Eyetracker {
     let video = this.video;
     if ((ctx != undefined) && (video != undefined)) {
       ctx.drawImage(video, 0, 0)
-      //window.requestAnimationFrame(this.showDisplay.bind(this));
     }
     else { console.log('\"this.ctx\", \"this.video\" Undefined') }
   }
@@ -134,11 +133,10 @@ export class Eyetracker {
           ctx.rect(x, y, 2, 2);
           ctx.stroke();
         }
-        //window.requestAnimationFrame(this.createOverlay.bind(this));
       }
       else { console.log('\"this.detector\", \"this.video\", \"this.ctx\" Undefined'); }
     }
-    catch (err) { console.log(err); /*window.requestAnimationFrame(this.createOverlay.bind(this));*/ }
+    catch (err) { console.log(err); }
   }
 
   toggleOverlay(): void {
@@ -149,13 +147,13 @@ export class Eyetracker {
     let model = await faceLandmarksDetection
           .load(faceLandmarksDetection.SupportedPackages.mediapipeFacemesh,
             { maxFaces: 1 })
-        this.model = model
-        return model
+    this.model = model
+    return model
   }
 
   async detectFace(): Promise<any> {
     const predictions = await this.model.estimateFaces({
-      input: this.video //can also be canvas -> might have to use canvas in our model, compare performance
+      input: this.video //can also be canvas
     });
 
     console.log(predictions)
