@@ -32,12 +32,21 @@
         //console.log(await Eyetracker.createDisplay('test canvas'));
         console.log("Canvas Element Created...");
 
-        await Eyetracker.init();
+        let detector = await Eyetracker.init();
         //console.log(await Eyetracker.init())
         console.log("Detector Created...");
 
-        Eyetracker.createOverlay();
+        let video = document.getElementById('test video')
 
+        async function repeatDetection() {
+          //await Eyetracker.detectFace();
+          await Eyetracker.detectFace()
+          Eyetracker.showDisplay();
+          Eyetracker.createOverlay();
+          window.requestAnimationFrame(repeatDetection)
+        }
+
+        Eyetracker.generateFaceMesh();
         // Eyetracker.hideDisplay(document.getElementById('test canvas'))
 
         // Eyetracker.isFaceValid();
