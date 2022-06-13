@@ -1,24 +1,17 @@
-import {
-  SupportedModels,
-  MediaPipeFaceMeshTfjsModelConfig,
-  createDetector,
-  FaceLandmarksDetector,
-} from "@tensorflow-models/face-landmarks-detection";
+import * as faceLandmarksDetection from "@tensorflow-models/face-landmarks-detection";
 import "@tensorflow/tfjs-core";
 import "@tensorflow/tfjs-backend-webgl";
 import "@mediapipe/face_mesh";
-import { AnyInputs } from "@tensorflow/tfjs-core";
-
 
 export class Eyetracker {
 
   private stream: MediaStream | undefined;
   private video: HTMLVideoElement | undefined;
   private canvas: HTMLCanvasElement | undefined;
-  private detector: FaceLandmarksDetector | undefined;
+  // private detector: FaceLandmarksDetector | undefined;
   private ctx: CanvasRenderingContext2D | undefined;
   private facialLandmarks: Array<any> = [{box: Object, keypoints: Array}];
-
+  private model: any | undefined;
   /**
    * This is a function to add two numbers together.
    *
@@ -113,7 +106,7 @@ export class Eyetracker {
     let video = this.video;
     if ((ctx != undefined) && (video != undefined)) {
       ctx.drawImage(video, 0, 0)
-      window.requestAnimationFrame(this.showDisplay.bind(this));
+      //window.requestAnimationFrame(this.showDisplay.bind(this));
     }
     else { console.log('\"this.ctx\", \"this.video\" Undefined') }
   }
@@ -126,65 +119,61 @@ export class Eyetracker {
     try {
       let ctx = this.ctx;
       let video = this.video;
-      let detector = this.detector;
+      //let detector = this.detector;
 
-      if ((detector != undefined) && (video != undefined) && (ctx != undefined)) {
-        const coordinates = this.facialLandmarks[0];
-        const boxCoords = coordinates.box;
-        const keypoints = coordinates.keypoints;
-        console.log('overlay')
-        for (let keypoint = 468; keypoint < keypoints.length; keypoint++) {
-          const x = keypoints[keypoint]['x']
-          const y = keypoints[keypoint]['y']
+      if (/*(detector != undefined) &&*/this.facialLandmarks.length > 0 && (video != undefined) && (ctx != undefined)) {
+        const coordinates = this.facialLandmarks;
+        //const boxCoords = coordinates.box;
+        const keypoints = coordinates;
+        //console.log('overlay')
+        for(let i = 468; i < 478; i++) {
+          let x = keypoints[i][0];
+          let y = keypoints[i][1];
  
           ctx.beginPath();
           ctx.rect(x, y, 2, 2);
           ctx.stroke();
         }
-        window.requestAnimationFrame(this.createOverlay.bind(this));
+        //window.requestAnimationFrame(this.createOverlay.bind(this));
       }
       else { console.log('\"this.detector\", \"this.video\", \"this.ctx\" Undefined'); }
     }
-    catch (err) { console.log(err); window.requestAnimationFrame(this.createOverlay.bind(this)); }
+    catch (err) { console.log(err); /*window.requestAnimationFrame(this.createOverlay.bind(this));*/ }
   }
 
   async init() {
-    const model = SupportedModels.MediaPipeFaceMesh;
-    const detectorConfig: MediaPipeFaceMeshTfjsModelConfig = {
-      runtime: "tfjs",
-      maxFaces: 1,
-      refineLandmarks: true,
-    };
-    const detector = await createDetector(model, detectorConfig);
-    this.detector = detector
-    return detector
+    let model = await faceLandmarksDetection
+          .load(faceLandmarksDetection.SupportedPackages.mediapipeFacemesh,
+            { maxFaces: 1 })
+        this.model = model
+        return model
   }
 
   async detectFace(): Promise<any> {
-    let ctx = this.ctx;
-    let video = this.video;
-    let detector = this.detector;
+    const predictions = await this.model.estimateFaces({
+      input: this.video //can also be canvas -> might have to use canvas in our model, compare performance
+    });
 
-    if ((detector != undefined) && (video != undefined) && (ctx != undefined)) {
-      detector.estimateFaces(video)
-        .then((value) => this.facialLandmarks = value);
+    console.log(predictions)
+    if(predictions.length > 0) {
+      this.facialLandmarks = predictions[0].scaledMesh
     } else {
-      console.log('\"this.detector\", \"this.video\", \"this.ctx\" Undefined');
+      this.facialLandmarks = []
     }
   }
 
-  async isFaceValid(): Promise<any> {
-    let detector = this.detector;
-    let video = this.video;
-    if ((detector != undefined) && (video != undefined)) {
-      const faces = await detector.estimateFaces(video, { flipHorizontal: true })
-      if (faces.length > 0) {
-        console.log('FACE DETECTED');
-        console.log(faces)
-      }
-      else { console.log('Waiting for faces...') }
-      window.requestAnimationFrame(await this.isFaceValid());
-    }
-    else { console.log('\"this.detector\", \"this.video\" Undefined') }
-  }
+  // async isFaceValid(): Promise<any> {
+  //   let detector = this.detector;
+  //   let video = this.video;
+  //   if ((detector != undefined) && (video != undefined)) {
+  //     const faces = await detector.estimateFaces(video, { flipHorizontal: true })
+  //     if (faces.length > 0) {
+  //       console.log('FACE DETECTED');
+  //       console.log(faces)
+  //     }
+  //     else { console.log('Waiting for faces...') }
+  //     window.requestAnimationFrame(await this.isFaceValid());
+  //   }
+  //   else { console.log('\"this.detector\", \"this.video\" Undefined') }
+  // }
 }
