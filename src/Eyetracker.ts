@@ -2,6 +2,8 @@ import * as faceLandmarksDetection from "@tensorflow-models/face-landmarks-detec
 import "@tensorflow/tfjs-core";
 import "@tensorflow/tfjs-backend-webgl";
 import "@mediapipe/face_mesh";
+import { MediaPipeFaceDetectorMediaPipe } from "@tensorflow-models/face-detection";
+import { MediaPipeFaceMesh } from "@tensorflow-models/face-landmarks-detection/dist/mediapipe-facemesh";
 
 export class Eyetracker {
 
@@ -25,7 +27,7 @@ export class Eyetracker {
     return a + b;
   }
 
-  async getCameraPermission() {
+  async getCameraPermission(): Promise<void> {
     this.stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
   }
 
@@ -39,11 +41,11 @@ export class Eyetracker {
     return videoDevices;
   }
 
-  async setCamera(device: MediaDeviceInfo) {
+  async setCamera(device: MediaDeviceInfo): Promise<void> {
     this.stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: device.deviceId } });
   }
 
-  async createVideo(Id: string) {
+  async createVideo(Id: string): Promise<HTMLVideoElement> {
     let video = document.createElement('video');
     video.setAttribute('id', Id);
     document.body.appendChild(video);
@@ -60,7 +62,7 @@ export class Eyetracker {
     });
   }
 
-  createDisplay(Id: string) {
+  createDisplay(Id: string): HTMLCanvasElement | undefined {
     let canvas = document.createElement("canvas")
     canvas.setAttribute('id', Id);
     document.body.appendChild(canvas);
@@ -86,7 +88,7 @@ export class Eyetracker {
   }
 
   // Need to test this out
-  setDisplay(canvas: HTMLCanvasElement) {
+  setDisplay(canvas: HTMLCanvasElement): void {
     let video = this.video;
     this.canvas = canvas;
     if ((canvas != undefined) && (video != undefined)) {
@@ -103,7 +105,7 @@ export class Eyetracker {
     else { console.log('/"this.canvas/", /"this.video/" Undefined'); }
   }
 
-  showDisplay() {
+  showDisplay(): void {
     let ctx = this.ctx;
     let video = this.video;
     if ((ctx != undefined) && (video != undefined)) {
@@ -112,7 +114,7 @@ export class Eyetracker {
     else { console.log('\"this.ctx\", \"this.video\" Undefined') }
   }
 
-  hideDisplay(canvas: HTMLCanvasElement) {
+  hideDisplay(canvas: HTMLCanvasElement): void {
       canvas.style.visibility = 'hidden'
   }
 
@@ -141,7 +143,7 @@ export class Eyetracker {
     this.overlay = !this.overlay
   }
 
-  async init() {
+  async init(): Promise<MediaPipeFaceMesh> {
     let model = await faceLandmarksDetection
           .load(faceLandmarksDetection.SupportedPackages.mediapipeFacemesh,
             { maxFaces: 1 })
@@ -149,7 +151,7 @@ export class Eyetracker {
     return model
   }
 
-  async detectFace(): Promise<any> {
+  async detectFace(): Promise<void> {
     const predictions = await this.model.estimateFaces({
       input: this.video //can also be canvas
     });
