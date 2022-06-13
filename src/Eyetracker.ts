@@ -162,9 +162,10 @@ export class Eyetracker {
     }
   }
 
-  async calibratePoint(x: number, y:number, element: (HTMLCanvasElement | HTMLVideoElement | HTMLImageElement)): Promise<void> {
-    let point = {'x': x, 'y': y, 'facialCoordinates': (await this.detector?.estimateFaces(element))}
+  calibratePoint(x: number, y:number): object {
+    let point = { 'x': x, 'y': y, 'facialCoordinates': this.facialLandmarks }
     this.calibrationPoints.push(point)
+    return point
   }
 
   clearCalibration(): void {
