@@ -40,7 +40,7 @@
       selector.appendChild(op);
     });
     document.body.innerHTML = `
-    <p>Please select the camera you'd like to use.</p>
+    <p id="text">Please select the camera you'd like to use.</p>
     `;
     document.body.appendChild(selector);
 
@@ -60,6 +60,11 @@
     await Eyetracker.createVideo("test video");
     await Eyetracker.createDisplay("test canvas");
     Eyetracker.keypointsAnimation(true);
+    selector.remove();
+    const btn = document.getElementById("btnSelect");
+    btn.remove();
+    const text = document.getElementById("text");
+    text.remove();
   }
 
   askPermission;
