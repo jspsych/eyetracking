@@ -57,14 +57,35 @@
     await Eyetracker.setCamera(
       await navigator.mediaDevices.getUserMedia({ video: { deviceId: id } })
     );
-    await Eyetracker.createVideo("test video");
-    await Eyetracker.createDisplay("test canvas");
+    await Eyetracker.createVideo("cameraFeed");
+    await Eyetracker.createDisplay("projectionFeed");
     Eyetracker.keypointsAnimation(true);
     selector.remove();
     const btn = document.getElementById("btnSelect");
     btn.remove();
     const text = document.getElementById("text");
     text.remove();
+
+    moveCameras();
+  }
+
+  function moveCameras() {
+    const vidsContainer = document.createElement("div");
+    vidsContainer.id = "vidContainer";
+    vidsContainer.style.display = "flex";
+    const camContainer = document.createElement("div");
+    camContainer.id = "camContainer";
+    camContainer.style.flexBasis = "auto";
+    const projContainer = document.createElement("div");
+    projContainer.id = "projContainer";
+    projContainer.style.flexBasis = "auto";
+
+    vidsContainer.appendChild(camContainer);
+    vidsContainer.appendChild(projContainer);
+    document.body.appendChild(vidsContainer);
+
+    camContainer.appendChild(document.getElementById("cameraFeed"));
+    projContainer.appendChild(document.getElementById("projectionFeed"));
   }
 
   askPermission;
