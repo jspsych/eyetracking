@@ -20,9 +20,9 @@
         //console.log(await Eyetracker.createVideo('test video'));
         console.log("Video Element Created...");
 
-        const detector = await Eyetracker.init();
+        const model = await Eyetracker.init();
         //console.log(await Eyetracker.init())
-        console.log("Detector Created...");
+        console.log("Model Initialized...");
 
         const video = document.getElementById('test video')
         
@@ -58,7 +58,7 @@
         imgCtx.translate(canvas.width, 0);
         imgCtx.scale(-1, 1)
 
-        console.log(await detector.estimateFaces())
+        //console.log(await detector.estimateFaces())
       
         let x;
         let y;
@@ -90,7 +90,8 @@
 
               // imgCtx2.drawImage(img, 0, 0)
               img.onload = async function() {
-                console.log(await (detector.estimateFaces(img)))
+                detector = (await (model.estimateFaces({ input: img })))
+                console.log(detector[0]['scaledMesh'])
               }
               // x = Math.floor(Math.random() * 640)
               // y = Math.floor(Math.random() * 480)
