@@ -8,10 +8,11 @@ export class Eyetracker {
   private stream: MediaStream | undefined;
   private video: HTMLVideoElement | undefined;
   private canvas: HTMLCanvasElement | undefined;
-  // private detector: FaceLandmarksDetector | undefined;
   private ctx: CanvasRenderingContext2D | undefined;
   private facialLandmarks: Array<any> = [{box: Object, keypoints: Array}];
   private model: any | undefined;
+  private overlay: boolean = true;
+
   /**
    * This is a function to add two numbers together.
    *
@@ -121,15 +122,14 @@ export class Eyetracker {
       let video = this.video;
       //let detector = this.detector;
 
-      if (/*(detector != undefined) &&*/this.facialLandmarks.length > 0 && (video != undefined) && (ctx != undefined)) {
+      if (this.overlay && this.facialLandmarks.length > 0 && (video != undefined) && (ctx != undefined)) {
         const coordinates = this.facialLandmarks;
         //const boxCoords = coordinates.box;
         const keypoints = coordinates;
         //console.log('overlay')
-        for(let i = 468; i < 478; i++) {
+        for(let i = 0; i < 478; i++) {
           let x = keypoints[i][0];
           let y = keypoints[i][1];
- 
           ctx.beginPath();
           ctx.rect(x, y, 2, 2);
           ctx.stroke();
@@ -139,6 +139,10 @@ export class Eyetracker {
       else { console.log('\"this.detector\", \"this.video\", \"this.ctx\" Undefined'); }
     }
     catch (err) { console.log(err); /*window.requestAnimationFrame(this.createOverlay.bind(this));*/ }
+  }
+
+  toggleOverlay(): void {
+    this.overlay = !this.overlay
   }
 
   async init() {
