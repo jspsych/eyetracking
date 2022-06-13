@@ -10,9 +10,11 @@
 <script>
   var Eyetracker = eyetrack.initEyetracker();
 
+  // create button to ask for permission
   const btn = document.getElementById("askPerm");
   btn.addEventListener("click", askPermission);
 
+  // initializes eyetracker and gets camera list
   async function askPermission() {
     await Eyetracker.init();
     await Eyetracker.getCameraPermission();
@@ -21,9 +23,10 @@
     updateCameraSelect();
   }
 
+  // creates selector with camera list
+  // TODO: bypass if devices.length == 1
   async function updateCameraSelect() {
     const devices = await Eyetracker.getListOfCameras();
-    console.log(devices[0]);
     const selector = document.createElement("select");
     selector.id = "cameraList";
     selector.name = "cameras";
@@ -51,24 +54,29 @@
     document.body.appendChild(btnSelect);
   }
 
+  // creates camera and face projection feeds
+  // TODO: add error handling if user selects the blank option
   async function startDetection() {
     const selector = document.getElementById("cameraList");
     const id = selector.options[selector.selectedIndex].value;
     await Eyetracker.setCamera(
       await navigator.mediaDevices.getUserMedia({ video: { deviceId: id } })
     );
-    await Eyetracker.createVideo("cameraFeed");
-    await Eyetracker.createDisplay("projectionFeed");
-    Eyetracker.keypointsAnimation(true);
+
     selector.remove();
     const btn = document.getElementById("btnSelect");
     btn.remove();
     const text = document.getElementById("text");
     text.remove();
 
+    await Eyetracker.createVideo("cameraFeed");
+    await Eyetracker.createDisplay("projectionFeed");
+    Eyetracker.keypointsAnimation(true);
+
     moveCameras();
   }
 
+  // creates divs to organize feeds
   function moveCameras() {
     const vidsContainer = document.createElement("div");
     vidsContainer.id = "vidContainer";
@@ -86,7 +94,17 @@
 
     camContainer.appendChild(document.getElementById("cameraFeed"));
     projContainer.appendChild(document.getElementById("projectionFeed"));
+    // await generateLabels();
   }
+
+  // TODO: if we need labels (e.g. time counter), we can use this
+  // function and just get stuff from eyetracker.ts
+
+  // async function generateLabels() {
+  //   const someLabel = document.createElement("p");
+  //   someLabel.id = labelID;
+  //   someLabel.innerHTML = await Eyetracker.someFunction();
+  // }
 
   askPermission;
 </script>
