@@ -8,55 +8,41 @@
   <script>
     var Eyetracker = eyetrack.initEyetracker();
 
-    document.querySelector("body").innerHTML = `2 + 2 = ${Eyetracker.add(
-      2,
-      2
-    )}`;
-
-    async function cameraSetup() {
+    async function main() {
       try {
         await Eyetracker.getCameraPermission();
         console.log("Permission Acquired...");
 
-        const test = await Eyetracker.getListOfCameras();
+        const cameraList = await Eyetracker.getListOfCameras();
         console.log("List of Cameras Acquired...");
 
-        await Eyetracker.setCamera(await test[0]);
+        await Eyetracker.setCamera(await cameraList[0]);
         console.log("Source Object Captured...");
 
         await Eyetracker.createVideo("test video");
-        //console.log(await Eyetracker.createVideo('test video'));
         console.log("Video Element Created...");
 
         await Eyetracker.createDisplay("test canvas");
-        //console.log(await Eyetracker.createDisplay('test canvas'));
         console.log("Canvas Element Created...");
 
         let detector = await Eyetracker.init();
-        //console.log(await Eyetracker.init())
-        console.log("Detector Created...");
-
-        let video = document.getElementById('test video')
+        console.log("Model Initialized...");
 
         //Wrapping three functions in an animation loop
         async function repeatDetection() {
-          await Eyetracker.detectFace()
+          await Eyetracker.detectFace();
           Eyetracker.showDisplay();
           Eyetracker.createOverlay();
-          window.requestAnimationFrame(repeatDetection)
+          window.requestAnimationFrame(repeatDetection);
         }
 
         //Built in function for overall face mesh
-        Eyetracker.generateFaceMesh();
-        // Eyetracker.hideDisplay(document.getElementById('test canvas'))
-
-        // Eyetracker.isFaceValid();
-
+        Eyetracker.generateFaceMesh(); // OR repeatDetection();
       } catch (err) {
         console.log("An error has been detected: " + err);
       }
     }
 
-    cameraSetup();
+    main();
   </script>
 </html>

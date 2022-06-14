@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="../dist/bundle.js"></script>
+  </head>
+
+  <body></body>
+  <script>
+    var Eyetracker = eyetrack.initEyetracker();
+
+    async function main() {
+      try {
+        const List = await Eyetracker.getListOfCameras();
+        console.log("List of Cameras Acquired...");
+
+        await Eyetracker.setCamera(await List[0]);
+        console.log("Source Object Captured...");
+
+        const video = await Eyetracker.createVideo("test video");
+        console.log("Video Element Created...");
+
+        const model = await Eyetracker.init();
+        console.log("Model Initialized...");
+
+        const canvas = document.createElement("canvas");
+        canvas.setAttribute("id", "Id");
+        document.body.appendChild(canvas);
+
+        canvas.height = video.height;
+        canvas.width = video.width;
+
+        const ctx = canvas.getContext("2d");
+
+        let calibrationPoints = [
+          [10, 10],
+          [10, 240],
+          [10, 470],
+          [320, 10],
+          [320, 240],
+          [320, 470],
+          [630, 10],
+          [630, 240],
+          [630, 470],
+        ];
+        let associations = [];
+
+        let calibrateLoop = setInterval(async () => {
+          if (calibrationPoints.length > 0) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            let x = calibrationPoints[0][0];
+            let y = calibrationPoints[0][1];
+
+            calibrationPoints.shift();
+
+            ctx.beginPath();
+            ctx.arc(x, y, 8, 0, 2 * Math.PI, true);
+            ctx.fill();
+
+            await Eyetracker.detectFace(); // detects face immediately, video syncing will give more control over when face is detected relative to dot appearane
+            Eyetracker.calibratePoint(x, y);
+          } else {
+            console.log(Eyetracker.calibrationPoints);
+            Eyetracker.clearCalibration();
+            clearInterval(calibrateLoop);
+          }
+        }, 3000);
+      } catch (err) {
+        console.log("An error has been detected: " + err);
+      }
+    }
+
+    main();
+  </script>
+</html>

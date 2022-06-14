@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="../dist/bundle.js"></script>
+  </head>
+
+  <body></body>
+  <script>
+      var Eyetracker = eyetrack.initEyetracker();
+
+    async function cameraSetup() {
+    try {
+        const test = await Eyetracker.getListOfCameras();
+        console.log("List of Cameras Acquired...");
+
+        await Eyetracker.setCamera(await test[0]);
+        console.log("Source Object Captured...");
+
+        await Eyetracker.createVideo("test video");
+        //console.log(await Eyetracker.createVideo('test video'));
+        console.log("Video Element Created...");
+
+        const model = await Eyetracker.init();
+        //console.log(await Eyetracker.init())
+        console.log("Model Initialized...");
+
+        const video = document.getElementById('test video')
+        
+        // const canvas = await Eyetracker.createDisplay('test canvas')
+        // const ctx = canvas.getContext('2d')
+        
+        //Would be CalibratePointFunction
+        let canvas = document.createElement("canvas")
+        canvas.setAttribute('id', 'Id');
+        document.body.appendChild(canvas);
+
+        let imageCanvas = document.createElement("canvas");
+        imageCanvas.setAttribute('id', 'imageCanvas');
+        document.body.appendChild(imageCanvas);
+
+        // let imageCanvas2 = document.createElement("canvas");
+        // imageCanvas2.setAttribute('id', 'image2Canvas');
+        // document.body.appendChild(imageCanvas2);
+
+        canvas.height = video.height;
+        canvas.width = video.width;
+
+        imageCanvas.height = video.height;
+        imageCanvas.width = video.width;
+
+        // imageCanvas2.height = video.height;
+        // imageCanvas2.width = video.width;
+
+        const ctx = canvas.getContext('2d');
+        const imgCtx = imageCanvas.getContext('2d');
+        // const imgCtx2 = imageCanvas.getContext('2d');
+
+        imgCtx.translate(canvas.width, 0);
+        imgCtx.scale(-1, 1)
+
+        //console.log(await detector.estimateFaces())
+      
+        let x;
+        let y;
+        let calibrationPoints = [[10, 10], [10, 240], [10, 470], [320, 10], [320, 240], [320, 470], [630, 10], [630, 240], [630, 470]]
+        let associations = []
+        console.log(calibrationPoints)
+        let i = 0
+        
+          setInterval(async () => {
+              
+            if (calibrationPoints) {
+              imgCtx.drawImage(video, 0, 0, imageCanvas.width, imageCanvas.height)
+              let dataUrl = imageCanvas.toDataURL("image/jpeg")
+              let time = video.currentTime
+              let timestamp = { frame: dataUrl, time: time}
+              console.log(timestamp)
+              //console.log(dataUrl)
+              
+              ctx.beginPath();
+              ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+              let img = document.createElement('img')
+              img.setAttribute('id', `${i}`)
+              img.height = video.height
+              img.width = video.width
+              //img.crossOrigin = 'anonymous'
+              img.src = dataUrl
+              document.body.appendChild(img)
+
+              // imgCtx2.drawImage(img, 0, 0)
+              img.onload = async function() {
+                detector = (await (model.estimateFaces({ input: img })))
+                console.log(detector[0]['scaledMesh'])
+              }
+              // x = Math.floor(Math.random() * 640)
+              // y = Math.floor(Math.random() * 480)
+              console.log(calibrationPoints[0])
+              x = calibrationPoints[0][0]
+              y = calibrationPoints[0][1]
+              calibrationPoints.shift()
+              console.log(`calibration points ${calibrationPoints}`)
+
+              ctx.beginPath();
+              ctx.arc(x, y, 8, 0, 2 * Math.PI, true);
+              ctx.fill();
+
+              i += 1
+            } else {
+              console.log('else branch')
+            }
+          }, 3000)
+      
+        function clearCalibration() {
+            calibrationPoints = []
+        }
+
+        // let calibrations = []
+        // button = document.createElement('button')
+        // button.setAttribute('id', 'button')
+        // button.onclick = async () => {
+        //     button.style.top = `${Math.random() * 1000}`
+        //     button.style.left = `${Math.random() * 1000}`
+
+        //     ctx.drawImage(video, 0, 0)
+        //     calibrations.push( 
+        //         {
+        //             buttonX: button.getBoundingClientRect().x,
+        //             buttonY: button.getBoundingClientRect().y,
+        //             eyeCoords: await detector.estimateFaces(video)
+        //         }
+        //     )
+        //     console.log(calibrations[0]["eyeCoords"])
+        // }
+        // document.body.appendChild(button)
+
+        // function clearCalibration() {
+        //   calibrations = []
+        // }
+        
+
+    } catch (err) {
+        console.log("An error has been detected: " + err);
+    }
+    }
+
+    cameraSetup();
+  </script>
+</html>
