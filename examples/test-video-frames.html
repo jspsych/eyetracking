@@ -34,13 +34,27 @@
         const videoTime = document.createElement("p");
         document.body.appendChild(videoTime);
 
+        const frameRateFloored = document.createElement("p");
+        document.body.appendChild(frameRateFloored);
+
+        const frameRate = document.createElement("p");
+        document.body.appendChild(frameRate);
         let i = 0;
-        frameLimit = 60;
+        frameLimit = 100000;
 
         function showVideoData() {
           if (i <= frameLimit) {
             Eyetracker.showDisplay();
             frameCounter.textContent = i.toString();
+
+            frameRateFloored.textContent = `${Math.floor(
+              i / video.currentTime
+            )} frames per second`;
+
+            frameRate.textContent = `${
+              i / video.currentTime
+            } frames per second`;
+
             i++;
             window.requestAnimationFrame(showVideoData);
           } else {
