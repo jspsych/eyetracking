@@ -266,6 +266,7 @@ export class Eyetracker {
       }
 
       if (video != undefined) {
+        // @ts-ignore
         video.requestVideoFrameCallback(this.generateFaceMesh.bind(this));
       }
     } catch (err) {
