@@ -211,7 +211,7 @@ export class Eyetracker {
         ctx != undefined
       ) {
         const keypoints: Array<Array<number>> = this.facialLandmarks;
-        for (let i = 0; i < 478; i++) {
+        for (let i = 0; i < keypoints.length; i++) {
           let x = keypoints[i][0];
           let y = keypoints[i][1];
           ctx.beginPath();
@@ -260,5 +260,15 @@ export class Eyetracker {
    */
   clearCalibration(): void {
     this.calibrationPoints = [];
+
+  async detectAndDraw(draw: boolean): Promise<void> {
+    await this.detectFace();
+    if (draw) { await this.createOverlay(); }
+  }
+
+  async keypointsAnimation(draw: boolean): Promise<void> {
+    await this.detectAndDraw(draw);
+    requestAnimationFrame(() => this.keypointsAnimation(draw));
+  }
   }
 }
