@@ -69,10 +69,10 @@
     const text = document.getElementById("text");
     text.remove();
 
-    // TODO: FIX HOW IT PAINTS
     await Eyetracker.createVideo("cameraFeed");
     await Eyetracker.createDisplay("projectionFeed");
-    Eyetracker.keypointsAnimation(true);
+
+    Eyetracker.generateFaceMesh();
 
     moveCameras();
   }
