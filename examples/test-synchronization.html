@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="../dist/bundle.js"></script>
+  </head>
+
+  <body></body>
+  <script>
+      var Eyetracker = eyetrack.initEyetracker();
+
+    async function cameraSetup() {
+    try {
+        const test = await Eyetracker.getListOfCameras();
+        console.log("List of Cameras Acquired...");
+
+        await Eyetracker.setCamera(await test[0]);
+        console.log("Source Object Captured...");
+
+        let imageCanvas = document.createElement("canvas");
+        imageCanvas.setAttribute('id', 'imageCanvas');
+        document.body.appendChild(imageCanvas);
+        const imgCtx = imageCanvas.getContext('2d');
+
+        await document.createElement('button');
+        button = document.createElement('button')
+        button.setAttribute('id', 'button')
+        button.onclick = async () => {
+            button.style.visibility = 'hidden'
+
+            video1 = await Eyetracker.createVideo("test video");
+            //console.log(await Eyetracker.createVideo('test video'));
+            console.log("Video Element Created...");
+            
+            imageCanvas.height = video1.height;
+            imageCanvas.width = video1.width;
+            imgCtx.translate(imageCanvas.width, 0);
+            imgCtx.scale(-1, 1)
+            imgCtx.drawImage(video1, 0, 0, imageCanvas.width, imageCanvas.height)
+
+        }
+        document.body.appendChild(button)
+
+        const detector = await Eyetracker.init();
+        //console.log(await Eyetracker.init())
+        console.log("Detector Created...");
+
+        const video = document.getElementById('test video')
+        
+
+        // let calibrations = []
+        // button = document.createElement('button')
+        // button.setAttribute('id', 'button')
+        // button.onclick = async () => {
+        //     button.style.top = `${Math.random() * 1000}`
+        //     button.style.left = `${Math.random() * 1000}`
+
+        //     ctx.drawImage(video, 0, 0)
+        //     calibrations.push( 
+        //         {
+        //             buttonX: button.getBoundingClientRect().x,
+        //             buttonY: button.getBoundingClientRect().y,
+        //             eyeCoords: await detector.estimateFaces(video)
+        //         }
+        //     )
+        //     console.log(calibrations[0]["eyeCoords"])
+        // }
+        // document.body.appendChild(button)
+
+        // function clearCalibration() {
+        //   calibrations = []
+        // }
+        
+
+    } catch (err) {
+        console.log("An error has been detected: " + err);
+    }
+    }
+
+    cameraSetup();
+  </script>
+</html>
