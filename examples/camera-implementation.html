@@ -42,9 +42,12 @@
 
       selector.appendChild(op);
     });
-    document.body.innerHTML = `
-    <p id="text">Please select the camera you'd like to use.</p>
-    `;
+
+    let message = document.createElement("p");
+    message.id = "text";
+    message.innerHTML = "Please select the camera you'd like to use.";
+    document.body.appendChild(message);
+
     document.body.appendChild(selector);
 
     const btnSelect = document.createElement("button");
