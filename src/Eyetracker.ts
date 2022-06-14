@@ -260,6 +260,16 @@ export class Eyetracker {
    */
   clearCalibration(): void {
     this.calibrationPoints = [];
+
+  async detectAndDraw(draw: boolean): Promise<void> {
+    await this.detectFace();
+    if (draw) { await this.createOverlay(); }
+  }
+
+  async keypointsAnimation(draw: boolean): Promise<void> {
+    await this.detectAndDraw(draw);
+    requestAnimationFrame(() => this.keypointsAnimation(draw));
+  }
   }
 
   async detectAndDraw(draw: boolean): Promise<void> {
