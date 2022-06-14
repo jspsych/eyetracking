@@ -38,14 +38,15 @@
 
         let video = document.getElementById('test video')
 
+        //Wrapping three functions in an animation loop
         async function repeatDetection() {
-          //await Eyetracker.detectFace();
           await Eyetracker.detectFace()
           Eyetracker.showDisplay();
           Eyetracker.createOverlay();
           window.requestAnimationFrame(repeatDetection)
         }
 
+        //Built in function for overall face mesh
         Eyetracker.generateFaceMesh();
         // Eyetracker.hideDisplay(document.getElementById('test canvas'))
 
