@@ -236,11 +236,41 @@ export class Eyetracker {
   /**
    * A function that combines the steps of detecting a face, and drawing an image and overlay onto a canvas
    */
-  async generateFaceMesh(): Promise<void> {
-    await this.detectFace();
-    this.showDisplay();
-    this.createOverlay();
-    window.requestAnimationFrame(this.generateFaceMesh.bind(this));
+  async generateFaceMesh(time: any, metadata: any): Promise<void> {
+    try {
+      let video: HTMLVideoElement | undefined = this.video;
+      await this.detectFace();
+      this.showDisplay();
+      this.createOverlay();
+
+      // hacking together a nice little way to display the metadata
+      // push metadata to paragraph element id'd as metadata
+      let metadataElement: HTMLElement | null =
+        document.getElementById("metadata");
+      if (metadataElement != null) {
+        metadataElement.innerHTML = JSON.stringify(metadata);
+      }
+      if (this.stream != null) {
+        let fps: number | undefined = this.stream
+          .getVideoTracks()[0]
+          .getSettings().frameRate;
+        if (fps != undefined && metadata != undefined) {
+          // THIS NUMBER DIFFERS WILDLY FROM PRESENTEDFRAMES
+          let counter = Math.round(metadata.mediaTime * fps);
+          let counterElement: HTMLElement | null =
+            document.getElementById("frameCounter");
+          if (counterElement != null) {
+            counterElement.innerHTML = counter.toString();
+          }
+        }
+      }
+
+      if (video != undefined) {
+        video.requestVideoFrameCallback(this.generateFaceMesh.bind(this));
+      }
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   /**
