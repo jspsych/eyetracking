@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="../dist/bundle.js"></script>
+  </head>
+
+  <body></body>
+  <script>
+    var Eyetracker = eyetrack.initEyetracker();
+
+    async function main() {
+      try {
+        await Eyetracker.getCameraPermission();
+        console.log("Permission Acquired...");
+
+        const cameraList = await Eyetracker.getListOfCameras();
+        console.log("List of Cameras Acquired...");
+
+        await Eyetracker.setCamera(await cameraList[0]);
+        console.log("Source Object Captured...");
+
+        let video = await Eyetracker.createVideo("test video");
+        console.log("Video Element Created...");
+
+        await Eyetracker.createDisplay("test canvas");
+        console.log("Canvas Element Created...");
+
+        const frameCounter = document.createElement("p");
+        document.body.appendChild(frameCounter);
+
+        const performanceTime = document.createElement("p");
+        document.body.appendChild(performanceTime);
+
+        const videoTime = document.createElement("p");
+        document.body.appendChild(videoTime);
+
+        let i = 0;
+        frameLimit = 60;
+
+        function showVideoData() {
+          if (i <= frameLimit) {
+            Eyetracker.showDisplay();
+            frameCounter.textContent = i.toString();
+            i++;
+            window.requestAnimationFrame(showVideoData);
+          } else {
+            console.log("frame limit reached");
+            performanceTime.textContent = `performance.now() time: ${
+              performance.now() / 1000
+            } seconds`;
+            videoTime.textContent = `video.currentTime time: ${video.currentTime} seconds`;
+          }
+        }
+
+        showVideoData();
+      } catch (err) {
+        console.log("An error has been detected: " + err);
+      }
+    }
+
+    main();
+  </script>
+</html>
