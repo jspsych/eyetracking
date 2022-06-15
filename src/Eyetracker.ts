@@ -3,6 +3,7 @@ import "@tensorflow/tfjs-core";
 import "@tensorflow/tfjs-backend-webgl";
 import "@mediapipe/face_mesh";
 import { MediaPipeFaceMesh } from "@tensorflow-models/face-landmarks-detection/dist/mediapipe-facemesh";
+import { getSystemFetch } from "@tensorflow/tfjs-core/dist/platforms/platform_node";
 
 export class Eyetracker {
   private stream: MediaStream | undefined;
@@ -13,6 +14,7 @@ export class Eyetracker {
   private facialLandmarks: Array<Array<number>> = [[]];
   private model: any | undefined;
   private overlay: boolean = true;
+  private lastMT: number = 0;
 
   /**
    * This is a function to add two numbers together.
@@ -248,7 +250,7 @@ export class Eyetracker {
       let metadataElement: HTMLElement | null =
         document.getElementById("metadata");
       if (metadataElement != null) {
-        metadataElement.innerHTML = JSON.stringify(metadata);
+        metadataElement.innerHTML = JSON.stringify(metadata, null, "\t");
       }
       if (this.stream != null) {
         let fps: number | undefined = this.stream
@@ -266,6 +268,12 @@ export class Eyetracker {
           let fpsElement: HTMLElement | null = document.getElementById("fps");
           if (fpsElement != null) {
             fpsElement.innerHTML = "FPS: " + fps.toString();
+          }
+          //console.log((performance.now()/1000) - metadata.mediaTime);
+          if (metadata.presentedFrames % 2 == 1) {
+            this.lastMT = metadata.mediaTime;
+          } else {
+            console.log(metadata.mediaTime - this.lastMT);
           }
         } else {
           console.log("fps or metadata undefined");
