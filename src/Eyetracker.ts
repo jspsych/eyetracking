@@ -260,8 +260,15 @@ export class Eyetracker {
           let counterElement: HTMLElement | null =
             document.getElementById("frameCounter");
           if (counterElement != null) {
-            counterElement.innerHTML = counter.toString();
+            counterElement.innerHTML =
+              "Frame Calculation: " + counter.toString();
           }
+          let fpsElement: HTMLElement | null = document.getElementById("fps");
+          if (fpsElement != null) {
+            fpsElement.innerHTML = "FPS: " + fps.toString();
+          }
+        } else {
+          console.log("fps or metadata undefined");
         }
       }
 
