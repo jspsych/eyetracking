@@ -3,11 +3,15 @@
   <meta charset="UTF-8" />
   <title>Test Camera</title>
   <script src="../dist/bundle.js"></script>
+  <link rel="stylesheet" href="ci-class.css" />
 </head>
 <body>
   <button id="askPerm">Click me to ask for permission!</button>
-  <p id="metadata"></p>
-  <p id="frameCounter"></p>
+  <div id="metricPanel" class="panel">
+    <p id="metadata" class="metrics"></p>
+    <p id="frameCounter" class="metrics"></p>
+    <p id="fps" class="metrics"></p>
+  </div>
 </body>
 <script>
   var Eyetracker = eyetrack.initEyetracker();
@@ -96,7 +100,7 @@
 
     vidsContainer.appendChild(camContainer);
     vidsContainer.appendChild(projContainer);
-    document.body.appendChild(vidsContainer);
+    document.body.insertBefore(vidsContainer, document.body.firstChild);
 
     camContainer.appendChild(document.getElementById("cameraFeed"));
     projContainer.appendChild(document.getElementById("projectionFeed"));
@@ -108,6 +112,7 @@
   async function generateLabels() {
     const timeCounter = document.createElement("p");
     timeCounter.id = "time";
+    timeCounter.className = "metrics";
     timeCounter.textContent = number;
 
     document.body.appendChild(timeCounter);
