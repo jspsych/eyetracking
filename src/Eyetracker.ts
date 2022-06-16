@@ -14,7 +14,6 @@ export class Eyetracker {
   private facialLandmarks: Array<Array<number>> = [[]];
   private model: any | undefined;
   private overlay: boolean = true;
-  private lastMT: number = 0;
 
   /**
    * This is a function to add two numbers together.
@@ -246,7 +245,6 @@ export class Eyetracker {
       this.createOverlay();
 
       // hacking together a nice little way to display the metadata
-      // push metadata to paragraph element id'd as metadata
       let metadataElement: HTMLElement | null =
         document.getElementById("metadata");
       if (metadataElement != null) {
@@ -268,12 +266,6 @@ export class Eyetracker {
           let fpsElement: HTMLElement | null = document.getElementById("fps");
           if (fpsElement != null) {
             fpsElement.innerHTML = "FPS: " + fps.toString();
-          }
-          //console.log((performance.now()/1000) - metadata.mediaTime);
-          if (metadata.presentedFrames % 2 == 1) {
-            this.lastMT = metadata.mediaTime;
-          } else {
-            console.log(metadata.mediaTime - this.lastMT);
           }
         } else {
           console.log("fps or metadata undefined");

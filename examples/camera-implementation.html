@@ -60,13 +60,13 @@
     const btnSelect = document.createElement("button");
     btnSelect.id = "btnSelect";
     btnSelect.innerHTML = "SELECT";
-    btnSelect.addEventListener("click", startDetection);
+    btnSelect.addEventListener("click", prepareFeed);
     document.body.appendChild(btnSelect);
   }
 
   // creates camera and face projection feeds
   // TODO: add error handling if user selects the blank option
-  async function startDetection() {
+  async function prepareFeed() {
     const selector = document.getElementById("cameraList");
     const id = selector.options[selector.selectedIndex].value;
     await Eyetracker.setCamera(
@@ -74,10 +74,27 @@
     );
 
     selector.remove();
-    const btn = document.getElementById("btnSelect");
-    btn.remove();
+    const removedbtn = document.getElementById("btnSelect");
+    removedbtn.remove();
     const text = document.getElementById("text");
     text.remove();
+
+    const centerdiv = document.createElement("div");
+    centerdiv.id = "centerdiv";
+    centerdiv.className = "centered";
+    document.body.insertBefore(centerdiv, document.body.firstChild);
+
+    const btn = document.createElement("button");
+    btn.id = "btnStart";
+    btn.innerHTML = "START THE DETECTION";
+    btn.addEventListener("click", startDetection);
+    centerdiv.appendChild(btn);
+  }
+
+  // adding this really creates a difference between presentedFrames and calculatedFrames but idk why!
+  async function startDetection() {
+    const centerdiv = document.getElementById("centerdiv");
+    centerdiv.remove();
 
     await Eyetracker.createVideo("cameraFeed");
     await Eyetracker.createDisplay("projectionFeed");
