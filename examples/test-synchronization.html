@@ -27,16 +27,35 @@
 
           button.style.visibility = "hidden";
 
-          video1 = await Eyetracker.createVideo("test video");
-          //console.log(await Eyetracker.createVideo('test video'));
-          console.log("Video Element Created...");
+          setTimeout(async () => {
+            video1 = await Eyetracker.createVideo("test video");
+            //console.log(await Eyetracker.createVideo('test video'));
+            console.log("Video Element Created...");
+            video1.oncanplay = function () {
+              this.currentTime = 0;
+              function showFrame() {
+                let video1 = document.getElementById("test video");
+                const canvas = document.createElement("canvas");
+                canvas.width = 640;
+                canvas.height = 480;
+                document.body.appendChild(canvas);
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(video1, 0, 0);
+                const time = document.createElement("p");
+                document.body.appendChild(time);
+                time.textContent = video1.currentTime;
+                window.requestAnimationFrame(showFrame);
+              }
+              showFrame();
+            };
+          }, 1000);
 
-          imageCanvas.height = video1.height;
-          imageCanvas.width = video1.width;
-          imgCtx.translate(imageCanvas.width, 0);
-          imgCtx.scale(-1, 1);
-          imgCtx.drawImage(video1, 0, 0, imageCanvas.width, imageCanvas.height);
-          console.log(video1.currentTime);
+          // imageCanvas.height = video1.height;
+          // imageCanvas.width = video1.width;
+          // imgCtx.translate(imageCanvas.width, 0);
+          // imgCtx.scale(-1, 1);
+          // imgCtx.drawImage(video1, 0, 0, imageCanvas.width, imageCanvas.height);
+          // console.log(video1.currentTime);
 
           let repaints = 0;
           let performanceTime1 = 0;
@@ -48,21 +67,6 @@
           let offset1 = 0;
           let offset2 = 0;
 
-          function showFrame() {
-            // const canvas = document.createElement("canvas");
-            // canvas.width = video1.width;
-            // canvas.height = video1.height;
-            // document.body.appendChild(canvas);
-            // const ctx = canvas.getContext("2d");
-            // ctx.drawImage(video1, 0, 0);
-            // const time = document.createElement("p");
-            // document.body.appendChild(time);
-            // time.textContent = video1.currentTime;
-            // window.requestAnimationFrame(showFrame)
-
-            window.requestAnimationFrame(showFrame);
-          }
-          //showFrame();
           setInterval(() => {
             if (repaints % 2 == 0) {
               performanceTime1 = performance.now();
@@ -97,7 +101,7 @@
               console.log(`offsetOffset: ${offsetOffset}`);
               repaints++;
             }
-          }, 3000);
+          }, 20000);
         };
         document.body.appendChild(button);
 
