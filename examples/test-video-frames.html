@@ -4,26 +4,37 @@
     <script src="../dist/bundle.js"></script>
   </head>
 
-  <body></body>
+  <body>
+    <video muted id="video" autoplay="true">
+      <source src="video.mp4" type="video/mp4" />
+    </video>
+  </body>
   <script>
     var Eyetracker = eyetrack.initEyetracker();
 
     async function main() {
       try {
-        await Eyetracker.getCameraPermission();
-        console.log("Permission Acquired...");
+        // Creates video stream from camera
+        // await Eyetracker.getCameraPermission();
+        // console.log("Permission Acquired...");
 
-        const cameraList = await Eyetracker.getListOfCameras();
-        console.log("List of Cameras Acquired...");
+        // const cameraList = await Eyetracker.getListOfCameras();
+        // console.log("List of Cameras Acquired...");
 
-        await Eyetracker.setCamera(await cameraList[0]);
-        console.log("Source Object Captured...");
+        // await Eyetracker.setCamera(await cameraList[0]);
+        // console.log("Source Object Captured...");
 
-        let video = await Eyetracker.createVideo("test video");
-        console.log("Video Element Created...");
+        // let video = await Eyetracker.createVideo("test video");
+        // console.log("Video Element Created...");
 
-        await Eyetracker.createDisplay("test canvas");
-        console.log("Canvas Element Created...");
+        // await Eyetracker.createDisplay("test canvas");
+        // console.log("Canvas Element Created...");
+
+        const video = document.getElementById("video");
+        video.onloadedmetadata = () => {
+          video.width = video.videoWidth;
+          video.height = video.videoHeight;
+        };
 
         const frameCounter = document.createElement("p");
         document.body.appendChild(frameCounter);
@@ -40,21 +51,40 @@
         const frameRate = document.createElement("p");
         document.body.appendChild(frameRate);
         let i = 0;
-        frameLimit = 100000;
+        frameLimit = 1860;
 
         function showVideoData() {
           if (i <= frameLimit) {
-            Eyetracker.showDisplay();
+            // Eyetracker.showDisplay();
             frameCounter.textContent = i.toString();
 
             frameRateFloored.textContent = `${Math.floor(
               i / video.currentTime
-            )} frames per second`;
+            )} repaints per second`;
 
             frameRate.textContent = `${
               i / video.currentTime
-            } frames per second`;
+            } repaints per second`;
 
+            // paint each 'frame' (repaint)
+            const canvas = document.createElement("canvas");
+            canvas.width = 1280;
+            canvas.height = 720;
+            document.body.appendChild(canvas);
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(video, 0, 0);
+            const time = document.createElement("p");
+            document.body.appendChild(time);
+            time.textContent = video.currentTime;
+
+            // if (Number.parseFloat(video.currentTime).toFixed(2) == 2.00) {
+            //   const canvas = document.createElement("canvas");
+            //   canvas.width = 1280;
+            //   canvas.height = 720;
+            //   document.body.appendChild(canvas);
+            //   const ctx = canvas.getContext("2d");
+            //   ctx.drawImage(video, 0, 0);
+            // }
             i++;
             window.requestAnimationFrame(showVideoData);
           } else {
@@ -66,7 +96,13 @@
           }
         }
 
+        function getFrames() {
+          frame = new VideoFrame(video, { timestamp: 90 });
+          console.log(frame);
+        }
+
         showVideoData();
+        //getFrames();
       } catch (err) {
         console.log("An error has been detected: " + err);
       }
