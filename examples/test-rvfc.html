@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="../dist/bundle.js"></script>
+  </head>
+
+  <body></body>
+  <script>
+    // GOAL: Create a demo where corresponding frames for calibration points
+    // are shown after the calibration process.
+
+    // PROCESS:
+    // 1[X]. Display multiple calibration points on screen
+    // 2[X]. Get performance.now() time of each calibration point
+    // 3[]. Subtract performance.now() times to get the performance.now()
+    // interval that corresponds to a particular calibration point
+    // 4[]. Convert that performance.now() interval to a videoTime interval
+    // using requestVideoFrameCallback() or web codecs methods
+    // 5[]. Get all frames that correspond to this interval -> these frames
+    // are all the frames that correspond to that particular calibration point
+
+    var Eyetracker = eyetrack.initEyetracker();
+
+    async function main() {
+      try {
+        const List = await Eyetracker.getListOfCameras();
+        console.log("List of Cameras Acquired...");
+
+        await Eyetracker.setCamera(await List[0]);
+        console.log("Source Object Captured...");
+
+        const video = await Eyetracker.createVideo("test video");
+        console.log("Video Element Created...");
+
+        const model = await Eyetracker.init();
+        console.log("Model Initialized...");
+
+        const imageCanvas = await Eyetracker.createDisplay();
+
+        const canvas = document.createElement("canvas");
+        canvas.setAttribute("id", "Id");
+        document.body.appendChild(canvas);
+
+        canvas.height = video.height;
+        canvas.width = video.width;
+
+        const ctx = canvas.getContext("2d");
+
+        let calibrationPoints = [
+          [10, 10],
+          [10, 240],
+          [10, 470],
+          [320, 10],
+          [320, 240],
+          [320, 470],
+          [630, 10],
+          [630, 240],
+          [630, 470],
+        ];
+        let associations = [];
+        const frameArray = [];
+        const predictions = [];
+
+        let startTime = 0.0;
+        let offset = 0.0;
+        let i = 0;
+        let imgCtx = imageCanvas.getContext("2d");
+        let greatestShift = 0.0;
+
+        const update = async (now, metadata) => {
+          if (startTime === 0.0) {
+            startTime = now;
+            offset = performance.now() / 1000 - startTime / 1000;
+          }
+
+          Eyetracker.showDisplay();
+          const elapsed = (now - startTime) / 1000;
+
+          frameArray.push({
+            frame: imgCtx.getImageData(
+              0,
+              0,
+              imageCanvas.width,
+              imageCanvas.height
+            ),
+            timestamp: elapsed,
+            offset: (performance.now() - now) / 1000,
+          });
+
+          // console.log(performance.now() / 1000);
+          // console.log(now / 1000);
+
+          // offset = performance.now() / 1000 - now / 1000;
+          // if (
+          //   performance.now() / 1000 - (now / 1000 + offset) >
+          //   greatestShift
+          // ) {
+          //   greatestShift = performance.now() / 1000 - (now / 1000 + offset);
+          //   console.log(`greatest Shift: ${greatestShift}`);
+          // }
+
+          // console.log(performance.now() / 1000 - (now / 1000 + offset));
+
+          frame = frameArray[i];
+          // const newCanvas = document.createElement("canvas");
+          // newCanvas.width = imageCanvas.width;
+          // newCanvas.height = imageCanvas.height;
+          // document.body.appendChild(newCanvas);
+          // newCtx = newCanvas.getContext("2d");
+          // newCtx.putImageData(frame.frame, 0, 0);
+
+          //console.log(frameArray);
+          // await Eyetracker.detectFace(frame.frame);
+          // predictions.push(Eyetracker.facialLandmarks);
+          //console.log(predictions);
+          i++;
+          //console.log(performance.now() / 1000 - elapsed);
+          video.requestVideoFrameCallback(update);
+        };
+
+        video.requestVideoFrameCallback(update);
+
+        let calibrateLoop = setInterval(async () => {
+          if (calibrationPoints.length > 0) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            let x = calibrationPoints[0][0];
+            let y = calibrationPoints[0][1];
+
+            calibrationPoints.shift();
+
+            ctx.beginPath();
+            ctx.arc(x, y, 8, 0, 2 * Math.PI, true);
+            ctx.fill();
+
+            //await Eyetracker.detectFace(); // detects face immediately, video syncing will give more control over when face is detected relative to dot appearance
+            let timedPoint = Eyetracker.calibratePoint(x, y);
+            timedPoint.time = performance.now() / 1000;
+            associations.push(timedPoint);
+            console.log(frameArray);
+          } else {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            console.log(Eyetracker.calibrationPoints);
+            console.log(associations);
+            Eyetracker.clearCalibration();
+            clearInterval(calibrateLoop);
+
+            let one = 12;
+            let two = 16;
+            let i = 0;
+
+            for (i = 0; i < frameArray.length; i++) {
+              if (
+                frameArray[i].timestamp + frameArray[i].offset >= one &&
+                frameArray[i].timestamp + frameArray[i].offset <= two
+              ) {
+                let canvasTimed = document.createElement("canvas");
+                document.body.appendChild(canvasTimed);
+                canvasTimed.height = canvas.height;
+                canvasTimed.width = canvas.width;
+                ctx135 = canvas135.getContext("2d");
+                ctx135.putImageData(frameArray[i].frame, 0, 0);
+              }
+            }
+            console.log(i);
+          }
+        }, 3000);
+      } catch (err) {
+        console.log("An error has been detected: " + err);
+      }
+    }
+
+    main();
+  </script>
+</html>
