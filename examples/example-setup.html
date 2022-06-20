@@ -30,7 +30,7 @@
 
         //Wrapping three functions in an animation loop
         async function repeatDetection() {
-          await Eyetracker.detectFace();
+          await Eyetracker.detectFace(Eyetracker.video);
           Eyetracker.showDisplay();
           Eyetracker.createOverlay();
           window.requestAnimationFrame(repeatDetection);
