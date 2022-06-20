@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="../dist/bundle.js"></script>
+  </head>
+
+  <body></body>
+  <script>
+    // GOAL: Create a demo where corresponding frames for calibration points
+    // are shown after the calibration process.
+
+    // PROCESS:
+    // 1[X]. Display multiple calibration points on screen
+    // 2[X]. Get performance.now() time of each calibration point
+    // 3[X]. Subtract performance.now() times to get the performance.now()
+    // interval that corresponds to a particular calibration point
+    // 4[X]. Convert that performance.now() interval to a videoTime interval
+    // using requestVideoFrameCallback() or web codecs methods
+    // 5[X]. Get all frames that correspond to this interval -> these frames
+    // are all the frames that correspond to that particular calibration point
+
+    var Eyetracker = eyetrack.initEyetracker();
+
+    async function main() {
+      try {
+        const List = await Eyetracker.getListOfCameras();
+        console.log("List of Cameras Acquired...");
+
+        button = document.createElement("button");
+        button.setAttribute("id", "button");
+        document.body.appendChild(button);
+        button.onclick = async () => {
+          button.style.visibility = "hidden";
+
+          await Eyetracker.setCamera(await List[0]);
+          console.log("Source Object Captured...");
+
+          video = await Eyetracker.createVideo("test video");
+          console.log("Video Element Created...");
+
+          const model = await Eyetracker.init();
+          console.log("Model Initialized...");
+
+          const imageCanvas = await Eyetracker.createDisplay();
+
+          // const canvas = document.createElement("canvas");
+          // canvas.setAttribute("id", "Id");
+          // document.body.appendChild(canvas);
+
+          // canvas.height = video.height;
+          // canvas.width = video.width;
+
+          // const ctx = canvas.getContext("2d");
+
+          para = document.createElement("p");
+          document.body.appendChild(para);
+          para.style.fontSize = "80px";
+
+          let calibrationPoints = [
+            [10, 10],
+            [10, 240],
+            [10, 470],
+            [320, 10],
+            [320, 240],
+            [320, 470],
+            [630, 10],
+            [630, 240],
+            [630, 470],
+          ];
+          let associations = [];
+          const frameArray = [];
+          const predictions = [];
+
+          let startTime = 0.0;
+          let offset = 0.0;
+          let i = 0;
+          let counter = 1;
+          let imgCtx = imageCanvas.getContext("2d");
+          let greatestShift = 0.0;
+
+          const update = async (now, metadata) => {
+            if (startTime === 0.0) {
+              startTime = now;
+              offset = performance.now() / 1000 - startTime / 1000;
+            }
+
+            Eyetracker.showDisplay();
+            const elapsed = (now - startTime) / 1000;
+
+            frameArray.push({
+              frame: imgCtx.getImageData(
+                0,
+                0,
+                imageCanvas.width,
+                imageCanvas.height
+              ),
+              timestamp: elapsed,
+              offset: (performance.now() - now) / 1000,
+            });
+
+            frame = frameArray[i];
+            i++;
+            video.requestVideoFrameCallback(update);
+          };
+
+          video.requestVideoFrameCallback(update);
+
+          let calibrateLoop = setInterval(async () => {
+            if (counter <= 905) {
+              para.textContent = `${counter}`;
+              //console.log(frameArray);
+              let canvas = document.createElement("canvas");
+              canvas.width = video.width;
+              canvas.height = video.height;
+              document.body.appendChild(canvas);
+              let ctx = canvas.getContext("2d");
+              ctx.putImageData(frameArray[counter].frame, 0, 0);
+              counter++;
+            } else {
+              clearInterval(calibrateLoop);
+            }
+          }, 1000 / 30);
+        };
+      } catch (err) {
+        console.log("An error has been detected: " + err);
+      }
+    }
+
+    main();
+  </script>
+</html>
