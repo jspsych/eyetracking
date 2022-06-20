@@ -174,9 +174,9 @@ export class Eyetracker {
    * A function that generates an array of facial landmark coordinates from an input video
    * and then sets these values to class field values to be used by other functions
    */
-  async detectFace(): Promise<void> {
+  async detectFace(media: any): Promise<void> {
     const predictions: Array<any> = await this.model.estimateFaces({
-      input: this.video, //can also be canvas
+      input: media, //can also be canvas
     });
 
     function isFaceValid(): boolean {
@@ -237,7 +237,7 @@ export class Eyetracker {
    * A function that combines the steps of detecting a face, and drawing an image and overlay onto a canvas
    */
   async generateFaceMesh(): Promise<void> {
-    await this.detectFace();
+    await this.detectFace(this.video);
     this.showDisplay();
     this.createOverlay();
     window.requestAnimationFrame(this.generateFaceMesh.bind(this));
@@ -263,7 +263,7 @@ export class Eyetracker {
   }
 
   async detectAndDraw(draw: boolean): Promise<void> {
-    await this.detectFace();
+    await this.detectFace(this.video);
     if (draw) {
       await this.createOverlay();
     }
