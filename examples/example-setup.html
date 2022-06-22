@@ -19,10 +19,12 @@
         await Eyetracker.setCamera(await cameraList[0]);
         console.log("Source Object Captured...");
 
-        await Eyetracker.createVideo("test video");
+        let video = await Eyetracker.createVideo("test video");
+        document.body.appendChild(video);
         console.log("Video Element Created...");
 
-        await Eyetracker.createDisplay("test canvas");
+        let canvas = await Eyetracker.createDisplay("test canvas");
+        document.body.appendChild(canvas);
         console.log("Canvas Element Created...");
 
         let detector = await Eyetracker.init();

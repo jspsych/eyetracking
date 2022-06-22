@@ -69,7 +69,6 @@ export class Eyetracker {
   async createVideo(Id: string): Promise<HTMLVideoElement> {
     let video: HTMLVideoElement = document.createElement("video");
     video.setAttribute("id", Id);
-    document.body.appendChild(video); // could be removed for more DOM flexibility
     video.style.transform = "scaleX(-1)";
     (video.srcObject as undefined | MediaProvider | null) = this.stream;
     video.autoplay = true;
@@ -91,7 +90,6 @@ export class Eyetracker {
   createDisplay(Id: string): HTMLCanvasElement | undefined {
     let canvas: HTMLCanvasElement = document.createElement("canvas");
     canvas.setAttribute("id", Id);
-    document.body.appendChild(canvas); // could be removed for more DOM flexibility
     this.canvas = canvas;
     if (this.video != null) {
       canvas.height = this.video.height;
