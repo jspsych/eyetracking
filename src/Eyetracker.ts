@@ -170,22 +170,15 @@ export class Eyetracker {
 
   /**
    * A function that generates an array of facial landmark coordinates from an input video
-   * and then sets these values to class field values to be used by other functions
+   * and then sets these values to class field values to be used by other functions.
    */
   async detectFace(): Promise<void> {
     const predictions: Array<any> = await this.model.estimateFaces({
-      input: this.video, //can also be canvas
+      input: this.video,
     });
 
-    function isFaceValid(): boolean {
-      if (predictions.length > 0) {
-        return true;
-      }
-      return false;
-    }
-
-    // Might not be needed
-    if (isFaceValid()) {
+    // if there is no face detected, prevent accessing an empty array
+    if (predictions.length > 0) {
       this.facialLandmarks = predictions[0].scaledMesh;
     } else {
       this.facialLandmarks = [];
