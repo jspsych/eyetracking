@@ -26,7 +26,8 @@ export class Eyetracker {
   }
 
   /**
-   * This is a function to ask a user to get camera permissions
+   * This is a function that asks a user for permission to use the camera
+   * through the web browser.
    */
   async getCameraPermission(): Promise<void> {
     this.stream = await navigator.mediaDevices.getUserMedia({
@@ -36,15 +37,15 @@ export class Eyetracker {
   }
 
   /**
-   * This is a function to generate a list of available cameras
-   * Getting cameras with DeviceID labels requires prior user permission
+   * This is a function to generate a list of available cameras.
+   * Acquiring the device IDs requires prior permission, so call getCameraPermission() first.
    * @returns The list of available video Media Devices
    */
   async getListOfCameras(): Promise<Array<MediaDeviceInfo>> {
     const devices: MediaDeviceInfo[] =
       await navigator.mediaDevices.enumerateDevices();
+
     const videoDevices: MediaDeviceInfo[] = devices.filter((d) => {
-      d.kind === "videoinput";
       return d.kind === "videoinput";
     });
 

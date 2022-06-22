@@ -16,7 +16,7 @@
         const cameraList = await Eyetracker.getListOfCameras();
         console.log("List of Cameras Acquired...");
 
-        await Eyetracker.setCamera(await cameraList[0]);
+        await Eyetracker.setCamera(cameraList[0]);
         console.log("Source Object Captured...");
 
         let video = await Eyetracker.createVideo("test video");
