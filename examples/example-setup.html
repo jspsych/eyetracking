@@ -32,18 +32,23 @@
 
         //Wrapping three functions in an animation loop
         async function repeatDetection() {
-          await Eyetracker.detectFace();
-          Eyetracker.showDisplay();
-          Eyetracker.createOverlay({
-            face: true,
-            iris: true,
-            boundingBox: true,
-          });
+          await Eyetracker.detectFace(video);
+          Eyetracker.showDisplay(canvas, video);
+          Eyetracker.createOverlay(
+            {
+              face: true,
+              iris: true,
+              boundingBox: true,
+            },
+            canvas,
+            video
+          );
+
           window.requestAnimationFrame(repeatDetection);
         }
 
         //Built in function for overall face mesh
-        Eyetracker.generateFaceMesh(); // OR repeatDetection();
+        repeatDetection();
       } catch (err) {
         console.log("An error has been detected: " + err);
       }
