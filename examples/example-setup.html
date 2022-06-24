@@ -34,7 +34,11 @@
         async function repeatDetection() {
           await Eyetracker.detectFace();
           Eyetracker.showDisplay();
-          Eyetracker.createOverlay();
+          Eyetracker.createOverlay({
+            face: true,
+            iris: true,
+            boundingBox: true,
+          });
           window.requestAnimationFrame(repeatDetection);
         }
 
