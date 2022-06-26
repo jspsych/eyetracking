@@ -10,12 +10,6 @@
 
     async function main() {
       try {
-        fetch("./coordinates.json")
-          .then((response) => {
-            return response.json();
-          })
-          .then((jsondata) => console.log(jsondata));
-
         await Eyetracker.getCameraPermission();
         console.log("Permission Acquired...");
 
@@ -45,6 +39,16 @@
         ctxCalibration = calibrationCanvas.getContext("2d");
 
         Eyetracker.getVideoFrameStream(video, canvas);
+
+        // Option to load calibration points through JSON
+        /*
+        fetch("./coordinates.json")
+          .then((response) => {
+            return response.json();
+          })
+          .then((jsondata) => console.log(jsondata));
+
+        */
 
         let calibrationPoints = [
           [10, 10],
