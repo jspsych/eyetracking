@@ -42,7 +42,7 @@
         calibrationCanvas.style.height = "100%";
         calibrationCanvas.style.width = "100%";
         document.body.appendChild(calibrationCanvas);
-        ctx2 = calibrationCanvas.getContext("2d");
+        ctxCalibration = calibrationCanvas.getContext("2d");
 
         Eyetracker.getVideoFrameStream(video, canvas);
 
@@ -58,28 +58,17 @@
           [290, 120],
         ];
 
-        function printFrames() {
-          if (Eyetracker.frames.length > 1) {
-            let imageData =
-              Eyetracker.frames[Eyetracker.frames.length - 1].imageData;
-            //console.log(imageData);
-            ctx2.putImageData(imageData, 0, 0);
-            i++;
-          }
-          window.requestAnimationFrame(printFrames);
-        }
-
         let calibrateLoop = setInterval(async () => {
           if (calibrationPoints.length > 0) {
-            ctx2.clearRect(0, 0, canvas.width, canvas.height);
+            ctxCalibration.clearRect(0, 0, canvas.width, canvas.height);
             let x = calibrationPoints[0][0];
             let y = calibrationPoints[0][1];
 
             calibrationPoints.shift();
 
-            ctx2.beginPath();
-            ctx2.arc(x, y, 3, 0, 2 * Math.PI, true);
-            ctx2.fill();
+            ctxCalibration.beginPath();
+            ctxCalibration.arc(x, y, 3, 0, 2 * Math.PI, true);
+            ctxCalibration.fill();
 
             setTimeout(async () => {
               await Eyetracker.detectFace(); // detects face immediately, video syncing will give more control over when face is detected relative to dot appearane
@@ -87,18 +76,23 @@
             }, 1500);
           } else {
             console.log(Eyetracker.calibrationPoints);
-            ctx2.clearRect(0, 0, canvas.width, canvas.height);
+            let canvas = document.getElementById("calibrationCanvas");
+            ctxCalibration.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctxCalibration.translate(canvas.width, 0);
+            ctxCalibration.scale(-1, 1);
             Eyetracker.clearCalibration();
 
             async function drawPredictions() {
-              let canvas = document.getElementById("calibrationCanvas");
-              let ctx2 = canvas.getContext("2d");
+              let ctxCalibration = canvas.getContext("2d");
+
               await Eyetracker.detectFace();
               let x = Eyetracker.facialLandmarks[477][0] * 0.25;
               let y = Eyetracker.facialLandmarks[477][1] * 0.25;
-              await ctx2.beginPath();
-              await ctx2.arc(x, y, 3, 0, 2 * Math.PI, true);
-              await ctx2.fill();
+
+              ctxCalibration.beginPath();
+              ctxCalibration.arc(x, y, 3, 0, 2 * Math.PI, true);
+              ctxCalibration.fill();
 
               window.requestAnimationFrame(drawPredictions);
             }
