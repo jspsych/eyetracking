@@ -332,10 +332,11 @@ export class Eyetracker {
       let imageData = ctx!.getImageData(0, 0, canvas.width, canvas.height);
       frames.push({ imageData: imageData, timestamp: now });
       Eyetracker.showDisplay(canvas, video);
+      // @ts-ignore
       video.requestVideoFrameCallback(repeatDetection);
     }
 
-    //Built in function for overall face mesh
+    // @ts-ignore
     video.requestVideoFrameCallback(repeatDetection);
   }
 }
