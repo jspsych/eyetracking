@@ -14,6 +14,10 @@ export class Eyetracker {
   private boundingBox: Array<Array<number>> = [[]];
   private model: any | undefined;
   private overlay: boolean = true;
+  private frames: Array<{
+    imageData: ImageData;
+    timestamp: DOMHighResTimeStamp;
+  }> = [];
 
   /**
    * This is a function to add two numbers together.
@@ -315,5 +319,23 @@ export class Eyetracker {
   async keypointsAnimation(draw: boolean): Promise<void> {
     await this.detectAndDraw(draw);
     requestAnimationFrame(() => this.keypointsAnimation(draw));
+  }
+
+  async getVideoFrameStream(
+    video: HTMLVideoElement,
+    canvas: HTMLCanvasElement
+  ) {
+    let ctx = canvas.getContext("2d");
+    let frames = this.frames;
+    let Eyetracker = this;
+    async function repeatDetection(now: DOMHighResTimeStamp, metadata: object) {
+      let imageData = ctx!.getImageData(0, 0, canvas.width, canvas.height);
+      frames.push({ imageData: imageData, timestamp: now });
+      Eyetracker.showDisplay(canvas, video);
+      video.requestVideoFrameCallback(repeatDetection);
+    }
+
+    //Built in function for overall face mesh
+    video.requestVideoFrameCallback(repeatDetection);
   }
 }
