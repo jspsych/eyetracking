@@ -20,7 +20,7 @@
         console.log("Source Object Captured...");
 
         let video = await Eyetracker.createVideo("test video");
-        document.body.appendChild(video);
+        //document.body.appendChild(video);
         console.log("Video Element Created...");
 
         let canvas = await Eyetracker.createDisplay("test canvas");
@@ -38,7 +38,7 @@
             {
               face: true,
               iris: true,
-              boundingBox: true,
+              boundingBox: false,
             },
             canvas
           );
