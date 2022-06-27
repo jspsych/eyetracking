@@ -321,6 +321,11 @@ export class Eyetracker {
     requestAnimationFrame(() => this.keypointsAnimation(draw));
   }
 
+  /**
+   * Paints a video image onto a canvas and adds the ImageData to the frames array at the framerate
+   * @param video The video for the sources of the images
+   * @param canvas The canvas which the images will be painted onto
+   */
   async getVideoFrameStream(
     video: HTMLVideoElement,
     canvas: HTMLCanvasElement
