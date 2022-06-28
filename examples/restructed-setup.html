@@ -50,8 +50,17 @@
           [290, 120],
         ];
 
-        Eyetracker.setupLoop(video, false, () => {
-          console.log(Eyetracker.now);
+        let frames = [];
+
+        Eyetracker.setupLoop(video, false, async () => {
+          if (frames.length < 10) {
+            Eyetracker.showDisplay();
+            let frame = Eyetracker.getCanvasImageData(canvas);
+            frames.push(frame);
+            console.log(frames);
+          } else {
+            Eyetracker.setupLoop(video, true);
+          }
         });
       } catch (err) {
         console.log("An error has been detected: " + err);
