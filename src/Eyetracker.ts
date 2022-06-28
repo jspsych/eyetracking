@@ -18,6 +18,8 @@ export class Eyetracker {
     imageData: ImageData;
     timestamp: DOMHighResTimeStamp;
   }> = [];
+  private now: any | undefined;
+  private metadata: any | undefined;
 
   /**
    * This is a function to add two numbers together.
@@ -41,6 +43,30 @@ export class Eyetracker {
     );
     this.model = model;
     return model;
+  }
+
+  async setupLoop(
+    video: HTMLVideoElement,
+    paused: boolean,
+    callback: Function
+  ): Promise<void> {
+    let Eyetracker = this;
+    async function repeat(now: DOMHighResTimeStamp, metadata: object) {
+      Eyetracker.now = now;
+      Eyetracker.metadata = metadata;
+      if (!paused) {
+        callback();
+        // @ts-ignore
+        video.requestVideoFrameCallback(repeat);
+      } else {
+        console.log("Loop is paused");
+        // @ts-ignore
+        video.requestVideoFrameCallback(repeat);
+      }
+    }
+
+    // @ts-ignore
+    video.requestVideoFrameCallback(repeat);
   }
 
   /**
@@ -331,26 +357,9 @@ export class Eyetracker {
     requestAnimationFrame(() => this.keypointsAnimation(draw));
   }
 
-  /**
-   * Paints a video image onto a canvas and adds the ImageData to the frames array at the framerate
-   * @param video The video for the sources of the images
-   * @param canvas The canvas which the images will be painted onto
-   */
-  async getVideoFrameStream(
-    video: HTMLVideoElement,
-    canvas: HTMLCanvasElement
-  ) {
+  async getCanvasImageData(canvas: HTMLCanvasElement) {
     let ctx = canvas.getContext("2d");
-    let frames = this.frames;
-    let Eyetracker = this;
-    async function repeatDetection(now: DOMHighResTimeStamp, metadata: object) {
-      let imageData = ctx!.getImageData(0, 0, canvas.width, canvas.height);
-      frames.push({ imageData: imageData, timestamp: now });
-      Eyetracker.showDisplay(canvas, video);
-      // @ts-ignore
-      video.requestVideoFrameCallback(repeatDetection);
-    }
-    // @ts-ignore
-    video.requestVideoFrameCallback(repeatDetection);
+    let imageData = ctx!.getImageData(0, 0, canvas.width, canvas.height);
+    return imageData;
   }
 }
