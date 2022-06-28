@@ -50,7 +50,9 @@
           [290, 120],
         ];
 
-        Eyetracker.setupLoop(video, false, () => {});
+        Eyetracker.setupLoop(video, false, () => {
+          console.log(Eyetracker.now);
+        });
       } catch (err) {
         console.log("An error has been detected: " + err);
       }
