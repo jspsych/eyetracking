@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="../dist/bundle.js"></script>
+  </head>
+
+  <body></body>
+  <script>
+    var Eyetracker = eyetrack.initEyetracker();
+
+    async function main() {
+      try {
+        await Eyetracker.getCameraPermission();
+        console.log("Permission Acquired...");
+
+        const cameraList = await Eyetracker.getListOfCameras();
+        console.log("List of Cameras Acquired...");
+
+        await Eyetracker.setCamera(cameraList[0]);
+        console.log("Source Object Captured...");
+
+        let video = await Eyetracker.createVideo("test video");
+        console.log("Video Element Created...");
+
+        let canvas = await Eyetracker.createDisplay("test canvas");
+        console.log("Canvas Element Created...");
+
+        let ctx = canvas.getContext("2d");
+        console.log("Canvas Context Created...");
+
+        let detector = await Eyetracker.init();
+        console.log("Model Initialized...");
+
+        let calibrationCanvas = document.createElement("canvas");
+        calibrationCanvas.setAttribute("id", "calibrationCanvas");
+        calibrationCanvas.style.height = "100%";
+        calibrationCanvas.style.width = "100%";
+        document.body.appendChild(calibrationCanvas);
+        ctxCalibration = calibrationCanvas.getContext("2d");
+
+        let calibrationPoints = [
+          [10, 10],
+          [10, 60],
+          [10, 120],
+          [150, 10],
+          [150, 60],
+          [150, 120],
+          [290, 10],
+          [290, 60],
+          [290, 120],
+        ];
+
+        Eyetracker.setupLoop(video, false, () => {});
+      } catch (err) {
+        console.log("An error has been detected: " + err);
+      }
+    }
+
+    main();
+  </script>
+</html>
