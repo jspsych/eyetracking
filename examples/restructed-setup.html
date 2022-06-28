@@ -55,7 +55,7 @@
         Eyetracker.setupLoop(video, false, async () => {
           if (frames.length < 10) {
             Eyetracker.showDisplay();
-            let frame = Eyetracker.getCanvasImageData(canvas);
+            let frame = await Eyetracker.getCanvasImageData(canvas);
             frames.push(frame);
             console.log(frames);
           } else {
