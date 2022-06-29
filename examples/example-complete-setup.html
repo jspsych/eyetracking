@@ -31,17 +31,9 @@
         let detector = await Eyetracker.init();
         console.log("Model Initialized...");
 
-        // let hello = () => {
-        //   console.log("hello");
-        // };
-
-        // let world = () => {
-        //   console.log(Eyetracker.metadata);
-        // };
-
         let printFrame = () => {
-          Eyetracker.detectFace();
-          console.log(Eyetracker.facialLandmarks);
+          // Eyetracker.detectFace();
+          // console.log(Eyetracker.facialLandmarks);
           let canvas = document.createElement("canvas");
           let ctx = canvas.getContext("2d");
           let para = document.createElement("p");
@@ -59,11 +51,9 @@
           document.body.appendChild(para);
         };
 
-        // Eyetracker.onFrameUpdateCallbackList.push(hello);
-        // Eyetracker.onFrameUpdateCallbackList.push(world);
         Eyetracker.onFrameUpdateCallbackList.push(printFrame);
 
-        Eyetracker.getVideoFrameStream();
+        await Eyetracker.initVideoFrameLoop();
 
         let calibrationCanvas = document.createElement("canvas");
         calibrationCanvas.setAttribute("id", "calibrationCanvas");
@@ -111,6 +101,7 @@
             let onsetTime = performance.now();
 
             setTimeout(async () => {
+              await Eyetracker.detectFace();
               let timedPoint = Eyetracker.calibratePoint(x, y);
               timedPoint.onsetTime = onsetTime;
               timedPoints.push(timedPoint);
@@ -118,13 +109,47 @@
           } else {
             console.log(Eyetracker.calibrationPoints);
             console.log(timedPoints);
-            // Eyetracker.processCalibrationPoints();
-            // console.log(Eyetracker.processedCalibrationPoints);
+
+            await Eyetracker.processCalibrationPoints();
+            console.log(Eyetracker.processedCalibrationPoints);
+
             let canvas = document.getElementById("calibrationCanvas");
             ctxCalibration.clearRect(0, 0, canvas.width, canvas.height);
 
             ctxCalibration.translate(canvas.width, 0);
             ctxCalibration.scale(-1, 1);
+
+            // for (let i = 0; i < Eyetracker.calibrationPoints.length; i++) {
+            //   let canvas = document.createElement("canvas");
+            //   canvas.height = video.height;
+            //   canvas.width = video.width;
+            //   document.body.appendChild(canvas);
+            //   let ctx = canvas.getContext("2d");
+            //   let para = document.createElement("p");
+            //   document.body.appendChild(para);
+            //   ctx.putImageData(Eyetracker.calibrationPoints[i].imageData, 0, 0);
+            //   para.textContent = Eyetracker.calibrationPoints[i].onsetTime;
+            //   const keypoints =
+            //     Eyetracker.processedCalibrationPoints[i].facialLandmarks;
+            //   const keypoints2 =
+            //     Eyetracker.calibrationPoints[i].facialLandmarks;
+            //   for (let i = 0; i < keypoints.length; i++) {
+            //     let x = keypoints[i][0];
+            //     let y = keypoints[i][1];
+            //     let x2 = keypoints2[i][0];
+            //     let y2 = keypoints2[i][1];
+            //     ctx.beginPath();
+            //     ctx.rect(x2, y2, 2, 2);
+            //     ctx.fillStyle = "red";
+            //     ctx.fill();
+
+            //     ctx.beginPath();
+            //     ctx.rect(x, y, 2, 2);
+            //     ctx.fillStyle = "blue";
+            //     ctx.fill();
+            //   }
+            // }
+
             Eyetracker.clearCalibration();
 
             async function drawPredictions() {
