@@ -5,21 +5,34 @@ import "@mediapipe/face_mesh";
 import { MediaPipeFaceMesh } from "@tensorflow-models/face-landmarks-detection/dist/mediapipe-facemesh";
 
 export class Eyetracker {
+  /** The camera stream used for video input. */
   private stream: MediaStream | undefined;
+  /** A video element that represents the camera stream. */
   private video: HTMLVideoElement | undefined;
+  /** A canvas element that represents both the camera stream and various overlays painted on it. */
   private canvas: HTMLCanvasElement | undefined;
+  /** The rendering context used to paint things on the canvas. */
   private ctx: CanvasRenderingContext2D | undefined;
+  /** The points in form {x, y} that are used to calibrate for gaze detection. */
   private calibrationPoints: Array<any> = []; //Should be changed to calibration point object
+  /** Contains calibration points that have already been processed. */
   private processedCalibrationPoints: Array<any> = []; //should be changed to processed point object
+  /** Points on the screen that indicate to various facial features. */
   private facialLandmarks: Array<Array<number>> = [[]];
+  /** Points that delineate a box that contains the face. */
   private boundingBox: Array<Array<number>> = [[]];
-  private model: any | undefined;
+  /** The detection model provided by tfjs/mediapipe that will be used to gather face data. */
+  private model: MediaPipeFaceMesh | undefined;
+  /** Shows whether or not the overlay should be displayed. */
   private overlay: boolean = true;
+  /** */
   private frames: Array<{
     imageData: ImageData;
     timestamp: DOMHighResTimeStamp;
   }> = [];
+  /** */
   public onFrameUpdateCallbackList: Array<VoidFunction> = [];
+  /** */
   public frameUpdatePaused: boolean = false;
 
   /**
@@ -184,10 +197,9 @@ export class Eyetracker {
   /**
    * A function that generates an array of facial landmark coordinates from an input video
    * and then sets these values to class field values to be used by other functions.
-   * @param media A media source or image data that is used as the input for facial landmark predictions
    */
   async detectFace(): Promise<void> {
-    const predictions: Array<any> = await this.model.estimateFaces({
+    const predictions: Array<any> = await this.model!.estimateFaces({
       input: this.frames[this.frames.length - 1].imageData,
     });
 
@@ -306,7 +318,7 @@ export class Eyetracker {
   async processCalibrationPoints(): Promise<void> {
     let processedPoints = [];
     for (let i = 0; i < this.calibrationPoints.length; i++) {
-      let predictions = await this.model.estimateFaces({
+      let predictions = await this.model!.estimateFaces({
         //should this be changed to run detectFace through params?
         input: this.calibrationPoints[i].imageData,
       });
