@@ -293,26 +293,32 @@ export class Eyetracker {
    * @returns A point object that associates a set of coordinates with facial landmark coordinates
    */
   calibratePoint(x: number, y: number): object {
-    // let index = this.frames.length - 1;
-    let point: object = { x: x, y: y, facialLandmarks: this.facialLandmarks };
+    let index = this.frames.length - 1;
+    let point: object = {
+      x: x,
+      y: y,
+      imageData: this.frames[index].imageData,
+    };
     this.calibrationPoints.push(point);
     return point;
   }
 
-  // async processCalibrationPoints(): Promise<void> {
-  //   let processedPoints = [];
-  //   for (let i = 0; i < this.calibrationPoints.length; i++) {
-  //     processedPoints.push({
-  //       x: this.calibrationPoints[i].x,
-  //       y: this.calibrationPoints[i].y,
-  //       facialLandmarks: await this.model.estimateFaces({
-  //         //should this be changed to run detectFace through params?
-  //         input: this.calibrationPoints[i].imageData,
-  //       }),
-  //     });
-  //   }
-  //   this.processedCalibrationPoints = processedPoints;
-  // }
+  async processCalibrationPoints(): Promise<void> {
+    let processedPoints = [];
+    for (let i = 0; i < this.calibrationPoints.length; i++) {
+      let predictions = await this.model.estimateFaces({
+        //should this be changed to run detectFace through params?
+        input: this.calibrationPoints[i].imageData,
+      });
+
+      processedPoints.push({
+        x: this.calibrationPoints[i].x,
+        y: this.calibrationPoints[i].y,
+        facialLandmarks: predictions[0].scaledMesh,
+      });
+    }
+    this.processedCalibrationPoints = processedPoints;
+  }
 
   /**
    * A function that clears the list of current calibration points.
@@ -353,7 +359,7 @@ export class Eyetracker {
    * @param video The video for the sources of the images
    * @param canvas The canvas which the images will be painted onto
    */
-  async getVideoFrameStream(
+  async initVideoFrameLoop(
     video: HTMLVideoElement = this.video!,
     canvas: HTMLCanvasElement = this.canvas!
   ) {
@@ -365,7 +371,6 @@ export class Eyetracker {
         Eyetracker.paintVideoOnCanvas();
         let imageData = ctx!.getImageData(0, 0, canvas.width, canvas.height);
         Eyetracker.frames.push({ imageData: imageData, timestamp: now });
-        console.log(metadata);
 
         for (let func of Eyetracker.onFrameUpdateCallbackList) {
           func();
