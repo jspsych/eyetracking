@@ -24,11 +24,13 @@
         await Eyetracker.setCamera(await test[0]);
         console.log("Source Object Captured...");
 
-        await Eyetracker.createVideo("test video");
+        let video = await Eyetracker.createVideo("test video");
+        document.body.appendChild(video);
         //console.log(await Eyetracker.createVideo('test video'));
         console.log("Video Element Created...");
 
-        await Eyetracker.createDisplay("test canvas");
+        let canvas = await Eyetracker.createDisplay("test canvas");
+        document.body.appendChild(canvas);
         //console.log(await Eyetracker.createDisplay('test canvas'));
         console.log("Canvas Element Created...");
 
@@ -36,14 +38,12 @@
         //console.log(await Eyetracker.init())
         console.log("Detector Created...");
 
-        let video = document.getElementById('test video')
-
         //Wrapping three functions in an animation loop
         async function repeatDetection() {
-          await Eyetracker.detectFace()
+          await Eyetracker.detectFace();
           Eyetracker.showDisplay();
           Eyetracker.createOverlay();
-          window.requestAnimationFrame(repeatDetection)
+          window.requestAnimationFrame(repeatDetection);
         }
 
         //Built in function for overall face mesh
@@ -51,7 +51,6 @@
         // Eyetracker.hideDisplay(document.getElementById('test canvas'))
 
         // Eyetracker.isFaceValid();
-
       } catch (err) {
         console.log("An error has been detected: " + err);
       }
