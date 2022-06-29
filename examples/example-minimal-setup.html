@@ -42,7 +42,7 @@
         Eyetracker.onFrameUpdateCallbackList.push(detectFace);
         Eyetracker.onFrameUpdateCallbackList.push(facialLandmarks);
 
-        Eyetracker.getVideoFrameStream(video, canvas);
+        Eyetracker.initVideoFrameLoop(video, canvas);
       } catch (err) {
         console.log("An error has been detected: " + err);
       }
