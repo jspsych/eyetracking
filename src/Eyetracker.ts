@@ -5,19 +5,35 @@ import "@mediapipe/face_mesh";
 import { MediaPipeFaceMesh } from "@tensorflow-models/face-landmarks-detection/dist/mediapipe-facemesh";
 
 export class Eyetracker {
+  /** The camera stream used for video input. */
   private stream: MediaStream | undefined;
+  /** A video element that represents the camera stream. */
   private video: HTMLVideoElement | undefined;
+  /** A canvas element that represents both the camera stream and various overlays painted on it. */
   private canvas: HTMLCanvasElement | undefined;
+  /** The rendering context used to paint things on the canvas. */
   private ctx: CanvasRenderingContext2D | undefined;
-  private calibrationPoints: Array<object> = [];
+  /** The points in form {x, y} that are used to calibrate for gaze detection. */
+  private calibrationPoints: Array<any> = []; //Should be changed to calibration point object
+  /** Contains calibration points that have already been processed. */
+  private processedCalibrationPoints: Array<any> = []; //should be changed to processed point object
+  /** Points on the screen that indicate to various facial features. */
   private facialLandmarks: Array<Array<number>> = [[]];
+  /** Points that delineate a box that contains the face. */
   private boundingBox: Array<Array<number>> = [[]];
-  private model: any | undefined;
+  /** The detection model provided by tfjs/mediapipe that will be used to gather face data. */
+  private model: MediaPipeFaceMesh | undefined;
+  /** Shows whether or not the overlay should be displayed. */
   private overlay: boolean = true;
+  /** */
   private frames: Array<{
     imageData: ImageData;
     timestamp: DOMHighResTimeStamp;
   }> = [];
+  /** */
+  public onFrameUpdateCallbackList: Array<VoidFunction> = [];
+  /** */
+  public frameUpdatePaused: boolean = false;
 
   /**
    * This is a function to add two numbers together.
@@ -106,7 +122,7 @@ export class Eyetracker {
    * @param Id An id attribute to which can be used to identify the video later
    * @returns A mirrored HTMLCanvasElement with matching proportions to the created video
    */
-  createDisplay(Id: string): HTMLCanvasElement | undefined {
+  createDisplayCanvas(Id: string): HTMLCanvasElement | undefined {
     let canvas: HTMLCanvasElement = document.createElement("canvas");
     canvas.setAttribute("id", Id);
     this.canvas = canvas;
@@ -135,7 +151,7 @@ export class Eyetracker {
    * This function mirrors an existing canvas and makes it proportional to the previously created video
    * @param canvas An existing canvas whose proprotions should match the video
    */
-  setDisplay(canvas: HTMLCanvasElement): void {
+  setDisplayCanvas(canvas: HTMLCanvasElement): void {
     let video: HTMLVideoElement | undefined = this.video;
     this.canvas = canvas;
     if (canvas != undefined && video != undefined) {
@@ -158,7 +174,7 @@ export class Eyetracker {
    * @param canvas An existing canvas where the image should be drawn
    * @param video A video object for the source of the image
    */
-  showDisplay(
+  paintVideoOnCanvas(
     canvas: HTMLCanvasElement = this.canvas!,
     video: HTMLVideoElement = this.video!
   ): void {
@@ -174,20 +190,17 @@ export class Eyetracker {
    * This function hides a canvas element provided.
    * @param canvas The HTMLCanvasElement that will be hidden
    */
-  hideDisplay(canvas: HTMLCanvasElement): void {
+  hideDisplayCanvas(canvas: HTMLCanvasElement): void {
     canvas.style.visibility = "hidden";
   }
 
   /**
    * A function that generates an array of facial landmark coordinates from an input video
    * and then sets these values to class field values to be used by other functions.
-   * @param media A media source or image data that is used as the input for facial landmark predictions
    */
-  async detectFace(
-    media: HTMLVideoElement | HTMLCanvasElement | ImageData = this.video!
-  ): Promise<void> {
-    const predictions: Array<any> = await this.model.estimateFaces({
-      input: media,
+  async detectFace(): Promise<void> {
+    const predictions: Array<any> = await this.model!.estimateFaces({
+      input: this.frames[this.frames.length - 1].imageData,
     });
 
     // if there is no face detected, prevent accessing an empty array
@@ -272,7 +285,7 @@ export class Eyetracker {
    */
   async generateFaceMesh(): Promise<void> {
     await this.detectFace();
-    this.showDisplay(this.canvas!, this.video!);
+    this.paintVideoOnCanvas(this.canvas!, this.video!);
     this.createOverlay(
       {
         face: true,
@@ -292,9 +305,31 @@ export class Eyetracker {
    * @returns A point object that associates a set of coordinates with facial landmark coordinates
    */
   calibratePoint(x: number, y: number): object {
-    let point: object = { x: x, y: y, facialCoordinates: this.facialLandmarks };
+    let index = this.frames.length - 1;
+    let point: object = {
+      x: x,
+      y: y,
+      imageData: this.frames[index].imageData,
+    };
     this.calibrationPoints.push(point);
     return point;
+  }
+
+  async processCalibrationPoints(): Promise<void> {
+    let processedPoints = [];
+    for (let i = 0; i < this.calibrationPoints.length; i++) {
+      let predictions = await this.model!.estimateFaces({
+        //should this be changed to run detectFace through params?
+        input: this.calibrationPoints[i].imageData,
+      });
+
+      processedPoints.push({
+        x: this.calibrationPoints[i].x,
+        y: this.calibrationPoints[i].y,
+        facialLandmarks: predictions[0].scaledMesh,
+      });
+    }
+    this.processedCalibrationPoints = processedPoints;
   }
 
   /**
@@ -336,19 +371,29 @@ export class Eyetracker {
    * @param video The video for the sources of the images
    * @param canvas The canvas which the images will be painted onto
    */
-  async getVideoFrameStream(
-    video: HTMLVideoElement,
-    canvas: HTMLCanvasElement
+  async initVideoFrameLoop(
+    video: HTMLVideoElement = this.video!,
+    canvas: HTMLCanvasElement = this.canvas!
   ) {
     let ctx = canvas.getContext("2d");
     let frames = this.frames;
     let Eyetracker = this;
     async function repeatDetection(now: DOMHighResTimeStamp, metadata: object) {
-      let imageData = ctx!.getImageData(0, 0, canvas.width, canvas.height);
-      frames.push({ imageData: imageData, timestamp: now });
-      Eyetracker.showDisplay(canvas, video);
-      // @ts-ignore
-      video.requestVideoFrameCallback(repeatDetection);
+      if (!Eyetracker.frameUpdatePaused) {
+        Eyetracker.paintVideoOnCanvas();
+        let imageData = ctx!.getImageData(0, 0, canvas.width, canvas.height);
+        Eyetracker.frames.push({ imageData: imageData, timestamp: now });
+
+        for (let func of Eyetracker.onFrameUpdateCallbackList) {
+          func();
+        }
+        // @ts-ignore
+        video.requestVideoFrameCallback(repeatDetection);
+      } else {
+        console.log("loop is paused");
+        // @ts-ignore
+        video.requestVideoFrameCallback(repeatDetection);
+      }
     }
     // @ts-ignore
     video.requestVideoFrameCallback(repeatDetection);
