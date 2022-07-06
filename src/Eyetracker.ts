@@ -169,12 +169,15 @@ export class Eyetracker {
     canvas.height = video.height;
     canvas.width = video.width;
     var ctx: CanvasRenderingContext2D | null = canvas.getContext("2d");
-    if (ctx != null) {
-      ctx.translate(canvas.width, 0);
-      ctx.scale(-1, 1);
-      ctx.fillStyle = "green";
+    if (ctx === null || ctx === undefined) {
+      throw new Error(
+        "Could not create canvas context, have you already declared ctx with a different type of context?"
+      );
     }
-    (this.ctx as undefined | CanvasRenderingContext2D | null) = ctx;
+    ctx.translate(canvas.width, 0);
+    ctx.scale(-1, 1);
+    ctx.fillStyle = "green";
+    this.ctx = ctx;
   }
 
   /**
@@ -187,11 +190,16 @@ export class Eyetracker {
     video: HTMLVideoElement = this.video!
   ): void {
     let ctx: CanvasRenderingContext2D | null = canvas.getContext("2d");
-    if (ctx != undefined && video != undefined) {
-      ctx.drawImage(video, 0, 0);
-    } else {
-      console.log('"this.ctx", "this.video" Undefined');
+    if (ctx === null || ctx === undefined) {
+      throw new Error(
+        "Could not create canvas context, have you already declared ctx with a different type of context?"
+      );
     }
+    if (video === null || video === undefined) {
+      throw new Error("No video stream detected, have you run createVideo()?");
+    }
+
+    ctx.drawImage(video, 0, 0);
   }
 
   /**
@@ -235,6 +243,7 @@ export class Eyetracker {
     },
     canvas: HTMLCanvasElement = this.canvas!
   ): void {
+    // ?? why is this in a try-catch?
     try {
       let ctx: CanvasRenderingContext2D | null = canvas.getContext("2d");
 

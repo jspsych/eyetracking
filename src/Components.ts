@@ -1,12 +1,14 @@
 import { Eyetracker } from "./Eyetracker";
 
 type fixationProps = {
-  /** The radius of the fixation used. */
-  radius: string;
+  /** The diameter of the fixation used. */
+  diameter: string;
   /** The color of the fixation used. */
   color: string;
   /** The shape of the fixation used. (ACCEPTED: circle, idk the name, cross, maybe x?) */
   shape: string;
+  /** The thickness of a cross fixation. */
+  crossThickness: string;
 };
 
 export class Components {
@@ -19,9 +21,10 @@ export class Components {
   private calDivUsed: HTMLDivElement | undefined;
   /** The properties of the fixation that will be created by {@link drawFixation()}. */
   private props: fixationProps = {
-    radius: "10px",
+    diameter: "10px",
     color: "red",
     shape: "circle",
+    crossThickness: "4px",
   };
 
   /** The default message that will be used for the landing page. */
@@ -85,7 +88,6 @@ export class Components {
     return landing;
   }
 
-  // TODO: what type is the return???? Array<???>
   /**
    * This will create a selector that will allow for one to select a camera.
    * This will automatically ask for permission and once finished, use
@@ -98,7 +100,7 @@ export class Components {
   async createSelector(
     id: string = "selector",
     message: string = "Select a camera"
-  ): Promise<Array<any>> {
+  ): Promise<Array<HTMLElement>> {
     this.currentComponents.push(id);
     let selector = document.createElement("select");
     selector.id = id;
@@ -135,7 +137,7 @@ export class Components {
         alert("Please select a camera.");
       }
     });
-    return new Array<any>(selector, btn);
+    return new Array<HTMLElement>(selector, btn);
   }
 
   /**
@@ -176,7 +178,6 @@ export class Components {
       if (point === undefined) {
         clearInterval(calibrateLoop);
         //TODO- what exactly should we return?
-        // NOTE: the below statement returns only two points, and fires before calibration finishes.
         console.log(await this.Eyetracker!.processCalibrationPoints()); // facial landmarks
         return finishedPoints; // imageData + onset time
       }
@@ -195,7 +196,6 @@ export class Components {
         finishedPoints.push(currentPoint);
       }, 1500);
     }, 3000);
-    console.warn("This shouldn't be accessible.");
     return finishedPoints;
   }
 
@@ -226,16 +226,42 @@ export class Components {
    * @param div The div that the fixation will be placed in.
    */
   drawFixation(x: number, y: number, div: HTMLDivElement) {
-    if (this.props.shape === "circle") {
-      const circle = document.createElement("div");
-      circle.style.width = "10px";
-      circle.style.height = "10px";
-      circle.style.borderRadius = "50%";
-      circle.style.backgroundColor = "red";
-      circle.style.position = "absolute";
-      circle.style.left = `calc(${x}% - 5px)`;
-      circle.style.top = `calc(${y}% - 5px)`;
-      div.appendChild(circle);
+    switch (this.props.shape) {
+      case "circle":
+        const adjustCircle = parseInt(this.props.diameter) / 2;
+        const circle = document.createElement("div");
+        circle.style.width = this.props.diameter;
+        circle.style.height = this.props.diameter;
+        circle.style.borderRadius = "50%";
+        circle.style.backgroundColor = this.props.color;
+        circle.style.position = "absolute";
+        circle.style.left = `calc(${x}% - ${adjustCircle}px)`;
+        circle.style.top = `calc(${y}% - ${adjustCircle}px)`;
+        div.appendChild(circle);
+        break;
+      // !! DOES NOT WORK !!
+      case "cross":
+        const adjustCross = parseInt(this.props.crossThickness) / 2;
+        const cross1 = document.createElement("div");
+        cross1.style.width = this.props.crossThickness;
+        cross1.style.height = this.props.diameter;
+        cross1.style.backgroundColor = this.props.color;
+        cross1.style.position = "absolute";
+        cross1.style.left = `calc(${x}% - ${adjustCross}px)`;
+        cross1.style.top = `calc(${y}% - ${adjustCross * 2 + 1}px)`;
+
+        const cross2 = document.createElement("div");
+        cross2.style.width = this.props.diameter;
+        cross2.style.height = this.props.crossThickness;
+        cross2.style.backgroundColor = this.props.color;
+        cross2.style.position = "absolute";
+        cross2.style.left = `calc(${x}% - ${adjustCross * 2 + 1}px)`;
+        cross2.style.top = `calc(${y}% - ${adjustCross}px)`;
+        div.appendChild(cross1);
+        div.appendChild(cross2);
+        break;
+      default:
+        throw new Error("Invalid shape.");
     }
   }
 
