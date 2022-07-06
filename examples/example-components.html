@@ -1,125 +1,30 @@
 <!DOCTYPE html>
 <head>
   <meta charset="UTF-8" />
-  <title>Test Camera</title>
+  <title>An Eyetracking Experiment</title>
   <script src="../dist/bundle.js"></script>
-  <link rel="stylesheet" href="ci-class.css" />
 </head>
-<body>
-  <button id="askPerm">Click me to ask for permission!</button>
-</body>
+<style>
+  body {
+    margin: 0px;
+    padding: 0px;
+  }
+</style>
+<body></body>
 <script>
-  var Eyetracker = eyetrack.initEyetracker();
+  /**
+   * GOALS:
+   * Display ease of use workflow for the user.
+   * Create a simple experiment that can be used to test the eyetracker.
+   * Utilize as many custom variables as possible.
+   */
+  const Eyetracker = eyetrack.initEyetracker();
+  const comp = eyetrack.initComponents(Eyetracker);
 
-  // create button to ask for permission
-  const btn = document.getElementById("askPerm");
-  btn.addEventListener("click", askPermission);
-
-  // initializes eyetracker and gets camera list
-  async function askPermission() {
-    await Eyetracker.init();
-    await Eyetracker.getCameraPermission();
-    const btn = document.getElementById("askPerm");
-    btn.remove();
-    updateCameraSelect();
-  }
-
-  // creates selector with camera list
-  // TODO: bypass if devices.length == 1
-  async function updateCameraSelect() {
-    const devices = await Eyetracker.getListOfCameras();
-    const selector = document.createElement("select");
-    selector.id = "cameraList";
-    selector.name = "cameras";
-
-    const blank = document.createElement("option");
-    blank.style.display = "none";
-    selector.appendChild(blank);
-
-    devices.forEach((d) => {
-      let op = document.createElement("option");
-      op.value = d.deviceId;
-      op.innerHTML = d.label;
-
-      selector.appendChild(op);
-    });
-
-    let message = document.createElement("p");
-    message.id = "text";
-    message.innerHTML = "Please select the camera you'd like to use.";
-    document.body.appendChild(message);
-
-    document.body.appendChild(selector);
-
-    const btnSelect = document.createElement("button");
-    btnSelect.id = "btnSelect";
-    btnSelect.innerHTML = "SELECT";
-    btnSelect.addEventListener("click", prepareFeed);
-    document.body.appendChild(btnSelect);
-  }
-
-  // creates camera and face projection feeds
-  // TODO: add error handling if user selects the blank option
-  async function prepareFeed() {
-    const selector = document.getElementById("cameraList");
-    const id = selector.options[selector.selectedIndex].value;
-    await Eyetracker.setCamera(
-      await navigator.mediaDevices.getUserMedia({ video: { deviceId: id } })
-    );
-
-    selector.remove();
-    const removedbtn = document.getElementById("btnSelect");
-    removedbtn.remove();
-    const text = document.getElementById("text");
-    text.remove();
-
-    const centerdiv = document.createElement("div");
-    centerdiv.id = "centerdiv";
-    centerdiv.className = "centered";
-    document.body.insertBefore(centerdiv, document.body.firstChild);
-
-    const btn = document.createElement("button");
-    btn.id = "btnStart";
-    btn.innerHTML = "START THE DETECTION";
-    btn.addEventListener("click", startDetection);
-    centerdiv.appendChild(btn);
-  }
-
-  // adding this really creates a difference between presentedFrames and calculatedFrames but idk why!
-  async function startDetection() {
-    const centerdiv = document.getElementById("centerdiv");
-    centerdiv.remove();
-
-    const canvas = await Eyetracker.createVideo("cameraFeed");
-    const video = await Eyetracker.createDisplay("projectionFeed");
-
-    document.body.appendChild(video);
-    document.body.appendChild(canvas);
-
-    Eyetracker.generateFaceMesh();
-
-    moveCameras();
-  }
-
-  // creates divs to organize feeds
-  async function moveCameras() {
-    const vidsContainer = document.createElement("div");
-    vidsContainer.id = "vidContainer";
-    vidsContainer.style.display = "flex";
-    const camContainer = document.createElement("div");
-    camContainer.id = "camContainer";
-    camContainer.style.flexBasis = "auto";
-    const projContainer = document.createElement("div");
-    projContainer.id = "projContainer";
-    projContainer.style.flexBasis = "auto";
-
-    vidsContainer.appendChild(camContainer);
-    vidsContainer.appendChild(projContainer);
-    document.body.insertBefore(vidsContainer, document.body.firstChild);
-
-    camContainer.appendChild(document.getElementById("cameraFeed"));
-    projContainer.appendChild(document.getElementById("projectionFeed"));
-  }
-
-  askPermission;
+  // basically a "go to the next stage" button
+  const clearComponentsButton = document.createElement("button");
+  clearComponentsButton.textContent = "Next";
+  clearComponentsButton.addEventListener("click", () => {
+    comp.clearComponents();
+  });
 </script>
