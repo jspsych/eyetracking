@@ -101,11 +101,14 @@ export class Eyetracker {
    * @param Id An id attribute to which can be used to identify the video later
    * @returns An HTMLVideoElement whose source is the stream from the previously selected camera
    */
-  async createVideo(Id: string): Promise<HTMLVideoElement> {
+  async createVideo(Id: string = "et-video"): Promise<HTMLVideoElement> {
     let video: HTMLVideoElement = document.createElement("video");
     video.setAttribute("id", Id);
     video.style.transform = "scaleX(-1)";
-    (video.srcObject as undefined | MediaProvider | null) = this.stream;
+    if (this.stream === null || this.stream === undefined) {
+      throw new Error("No camera stream detected, have you run setCamera()?");
+    }
+    video.srcObject = this.stream;
     video.autoplay = true;
     return new Promise((resolve) => {
       video.onloadedmetadata = () => {
@@ -122,28 +125,28 @@ export class Eyetracker {
    * @param Id An id attribute to which can be used to identify the video later
    * @returns A mirrored HTMLCanvasElement with matching proportions to the created video
    */
-  createDisplayCanvas(Id: string): HTMLCanvasElement | undefined {
+  createDisplayCanvas(Id: string = "et-canvas"): HTMLCanvasElement | undefined {
+    if (this.video === null || this.video === undefined) {
+      throw new Error("No video stream detected, have you run createVideo()?");
+    }
+
     let canvas: HTMLCanvasElement = document.createElement("canvas");
     canvas.setAttribute("id", Id);
     this.canvas = canvas;
-    if (this.video != null) {
-      canvas.height = this.video.height;
-      canvas.width = this.video.width;
-      this.canvas = canvas;
-      var ctx: CanvasRenderingContext2D | null = canvas.getContext("2d");
-      if (ctx != null) {
-        ctx.translate(canvas.width, 0);
-        ctx.scale(-1, 1);
-        ctx.fillStyle = "green";
-        (this.ctx as undefined | CanvasRenderingContext2D | null) = ctx;
-        return canvas;
-      } else {
-        console.log("canvas.getContext('2d') return null");
-        return canvas;
-      }
-    } else {
-      console.log('Undefined Property "this.video"');
+    canvas.height = this.video.height;
+    canvas.width = this.video.width;
+    this.canvas = canvas;
+    var ctx: CanvasRenderingContext2D | null = canvas.getContext("2d");
+    if (ctx === null) {
+      throw new Error(
+        "Could not create canvas context, have you already declared ctx with a different type of context?"
+      );
     }
+    ctx.translate(canvas.width, 0);
+    ctx.scale(-1, 1);
+    ctx.fillStyle = "green";
+    this.ctx = ctx;
+    return canvas;
   }
 
   // Need to test this out
@@ -152,21 +155,26 @@ export class Eyetracker {
    * @param canvas An existing canvas whose proprotions should match the video
    */
   setDisplayCanvas(canvas: HTMLCanvasElement): void {
-    let video: HTMLVideoElement | undefined = this.video;
-    this.canvas = canvas;
-    if (canvas != undefined && video != undefined) {
-      canvas.height = video.height;
-      canvas.width = video.width;
-      var ctx: CanvasRenderingContext2D | null = canvas.getContext("2d");
-      if (ctx != null) {
-        ctx.translate(canvas.width, 0);
-        ctx.scale(-1, 1);
-        ctx.fillStyle = "green";
-      }
-      (this.ctx as undefined | CanvasRenderingContext2D | null) = ctx;
-    } else {
-      console.log('/"this.canvas/", /"this.video/" Undefined');
+    if (this.video === null || this.video === undefined) {
+      throw new Error("No video stream detected, have you run createVideo()?");
     }
+    if (this.canvas === null || this.canvas === undefined) {
+      throw new Error(
+        "No canvas detected, have you run createDisplayCanvas()?"
+      );
+    }
+
+    let video = this.video;
+    this.canvas = canvas;
+    canvas.height = video.height;
+    canvas.width = video.width;
+    var ctx: CanvasRenderingContext2D | null = canvas.getContext("2d");
+    if (ctx != null) {
+      ctx.translate(canvas.width, 0);
+      ctx.scale(-1, 1);
+      ctx.fillStyle = "green";
+    }
+    (this.ctx as undefined | CanvasRenderingContext2D | null) = ctx;
   }
 
   /**
@@ -315,7 +323,7 @@ export class Eyetracker {
     return point;
   }
 
-  async processCalibrationPoints(): Promise<void> {
+  async processCalibrationPoints(): Promise<Array<object>> {
     let processedPoints = [];
     for (let i = 0; i < this.calibrationPoints.length; i++) {
       let predictions = await this.model!.estimateFaces({
@@ -330,6 +338,7 @@ export class Eyetracker {
       });
     }
     this.processedCalibrationPoints = processedPoints;
+    return processedPoints;
   }
 
   /**
@@ -376,7 +385,6 @@ export class Eyetracker {
     canvas: HTMLCanvasElement = this.canvas!
   ) {
     let ctx = canvas.getContext("2d");
-    let frames = this.frames;
     let Eyetracker = this;
     async function repeatDetection(now: DOMHighResTimeStamp, metadata: object) {
       if (!Eyetracker.frameUpdatePaused) {

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="../dist/bundle.js"></script>
+  </head>
+  <style>
+    body {
+      margin: 0px;
+      padding: 0px;
+    }
+  </style>
+  <body></body>
+  <script>
+    const Eyetracker = eyetrack.initEyetracker();
+    const comp = eyetrack.initComponents(Eyetracker);
+
+    const clearComponentsButton = document.createElement("button");
+    clearComponentsButton.textContent = "Next";
+    clearComponentsButton.addEventListener("click", () => {
+      comp.clearComponents();
+    });
+
+    async function start() {
+      console.log("checK");
+      const landing = await comp.createLanding();
+      document.body.append(landing);
+      let next = clearComponentsButton;
+      next.addEventListener("click", () => {
+        selectorPrompt();
+        next.remove();
+      });
+      document.body.append(next);
+    }
+
+    async function selectorPrompt() {
+      const [selector, btn] = await comp.createSelector();
+      document.body.append(selector);
+      document.body.append(btn);
+
+      btn.addEventListener("click", () => {
+        setTimeout(async () => {
+          const div = document.createElement("div");
+          div.style.width = "100%";
+          div.style.height = "100%";
+          div.style.position = "fixed";
+          div.id = "cal";
+          document.body.appendChild(div);
+          await comp.preload();
+          let ret = await comp.calibrate(div);
+          console.log(ret);
+        }, 1000);
+      });
+    }
+
+    start();
+  </script>
+</html>

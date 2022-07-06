@@ -6,7 +6,7 @@
   <body></body>
   <script>
     const Eyetracker = eyetrack.initEyetracker();
-    const comp = new Components(Eyetracker);
+    const comp = eyetrack.initComponents(Eyetracker);
 
     async function start() {
       // deals with all the permissions and camera stuff

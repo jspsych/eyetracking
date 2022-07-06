@@ -1,4 +1,5 @@
 import { Eyetracker } from "./Eyetracker";
+import { Components } from "./Components";
 
 export function initEyetracker() {
   if (!("requestVideoFrameCallback" in HTMLVideoElement.prototype)) {
@@ -7,4 +8,8 @@ export function initEyetracker() {
     );
   }
   return new Eyetracker();
+}
+
+export function initComponents(et: Eyetracker) {
+  return new Components(et);
 }
