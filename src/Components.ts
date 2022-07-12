@@ -239,7 +239,7 @@ export class Components {
         circle.style.top = `calc(${y}% - ${adjustCircle}px)`;
         div.appendChild(circle);
         break;
-      // !! DOES NOT WORK !!
+
       case "cross":
         const adjustCross = parseInt(this.props.crossThickness) / 2;
         const cross1 = document.createElement("div");
@@ -247,16 +247,20 @@ export class Components {
         cross1.style.height = this.props.diameter;
         cross1.style.backgroundColor = this.props.color;
         cross1.style.position = "absolute";
-        cross1.style.left = `calc(${x}% - ${adjustCross}px)`;
-        cross1.style.top = `calc(${y}% - ${adjustCross * 2 + 1}px)`;
+        cross1.style.left = `calc(${x}% - ${adjustCross}px + ${
+          parseInt(this.props.diameter) / 2
+        }px)`;
+        cross1.style.top = `calc(${y}%)`;
 
         const cross2 = document.createElement("div");
         cross2.style.width = this.props.diameter;
         cross2.style.height = this.props.crossThickness;
         cross2.style.backgroundColor = this.props.color;
         cross2.style.position = "absolute";
-        cross2.style.left = `calc(${x}% - ${adjustCross * 2 + 1}px)`;
-        cross2.style.top = `calc(${y}% - ${adjustCross}px)`;
+        cross2.style.left = `calc(${x}%)`;
+        cross2.style.top = `calc(${y}% - ${adjustCross}px + ${
+          parseInt(this.props.diameter) / 2
+        }px)`;
         div.appendChild(cross1);
         div.appendChild(cross2);
         break;

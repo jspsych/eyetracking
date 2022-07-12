@@ -23,6 +23,10 @@
 
     test(24, 50, div);
 
+    comp.props.shape = "cross";
+    comp.props.diameter = "100px";
+    comp.drawFixation(24, 50, div);
+
     function test(x, y, div) {
       const adjust = parseInt(4) / 2;
       const cross1 = document.createElement("div");
@@ -30,16 +34,20 @@
       cross1.style.height = "100px";
       cross1.style.backgroundColor = "green";
       cross1.style.position = "absolute";
-      cross1.style.left = `calc(${x}% - ${adjust}px)`;
-      cross1.style.top = `calc(${y}% - ${5}px)`;
+      cross1.style.left = `calc(${x}% - ${adjust}px + ${
+        parseInt(cross1.style.height) / 2
+      }px)`;
+      cross1.style.top = `calc(${y}%)`;
 
       const cross2 = document.createElement("div");
       cross2.style.width = "100px";
       cross2.style.height = "4px";
       cross2.style.backgroundColor = "green";
       cross2.style.position = "absolute";
-      cross2.style.left = `calc(${x}% - ${5}px)`;
-      cross2.style.top = `calc(${y}% - ${adjust}px)`;
+      cross2.style.left = `calc(${x}%)`;
+      cross2.style.top = `calc(${y}% - ${adjust}px + ${
+        parseInt(cross2.style.width) / 2
+      }px)`;
       div.appendChild(cross2);
 
       div.appendChild(cross1);
