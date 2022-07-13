@@ -31,13 +31,16 @@
   async function start() {
     const landing = await comp.createLanding();
     document.body.append(landing);
+    // create a wrapper so that the button doesn't stretch b/c landing is flex
+    let wrapper = document.createElement("div");
     let next = clearComponentsButton;
     // invokes the next step and clears itself
     next.addEventListener("click", () => {
       selectorPrompt();
-      next.remove();
+      next.parentNode.remove();
     });
-    document.body.append(next);
+    wrapper.append(next);
+    landing.append(wrapper);
   }
 
   async function selectorPrompt() {

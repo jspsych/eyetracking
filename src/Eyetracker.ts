@@ -32,7 +32,7 @@ export class Eyetracker {
   }> = [];
   /** */
   public onFrameUpdateCallbackList: Array<VoidFunction> = [];
-  /** */
+  /** Determines whether or not {@link initVideoFrameLoop()}'s rVFCallbacks are paused or not. */
   public frameUpdatePaused: boolean = false;
 
   /**

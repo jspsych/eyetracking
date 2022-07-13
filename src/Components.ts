@@ -1,5 +1,6 @@
 import { Eyetracker } from "./Eyetracker";
 
+/** The properties of any fixation that will be drawn. */
 type fixationProps = {
   /** The diameter of the fixation used. */
   diameter: string;
@@ -43,6 +44,10 @@ export class Components {
     [90, 90],
   ];
 
+  /**
+   * @constructor
+   * @param et The eyetracker object that will be used to carry out most underlying work.
+   */
   constructor(et: Eyetracker) {
     if (et === undefined || et === null) {
       throw new Error("Eyetracker cannot be undefined or null.");
@@ -63,10 +68,11 @@ export class Components {
     return { detector, video, canvas };
   }
 
-  //TODO: figure out how to put CSS in here shorthand without giving me a stroke
+  //TODO: maybe allow multiple lines instead of forcing user to put one big one?
   /**
    * This will create a landing page that will inform the user of the nature
-   *  of the usage of the Eyetracking software.
+   *  of the usage of the Eyetracking software. The landing page is contained
+   *  inside of a wrapper div with flex capabilities.
    *
    * @param id The id of the div that will be used to display the landing page.
    * @param message The message that will be displayed on the landing page.
@@ -77,6 +83,7 @@ export class Components {
     message: string = this.DEFAULT_MESSAGE
   ): HTMLDivElement {
     this.currentComponents.push(id);
+    this.currentComponents.push(`${id}-wrapper`);
     let landing = document.createElement("div");
     landing.id = id;
     landing.classList.add("landing");
@@ -85,7 +92,15 @@ export class Components {
                 <p>${message}</p>
             </div>
         `;
-    return landing;
+
+    let wrapper = document.createElement("div");
+    wrapper.id = `${id}-wrapper`;
+    wrapper.append(landing);
+    wrapper.style.display = "flex";
+    wrapper.style.flexDirection = "column";
+    wrapper.style.textAlign = "center";
+
+    return wrapper;
   }
 
   /**
@@ -186,12 +201,11 @@ export class Components {
 
       setTimeout(async () => {
         await this.Eyetracker!.detectFace();
-        let currentPoint = this.Eyetracker!.calibratePoint(
+        let currentPoint: any = this.Eyetracker!.calibratePoint(
           point![0],
           point![1]
         );
         //TODO- let's find a way to prevent throwing this error, maybe explicitly defining?
-        //@ts-ignore
         currentPoint.onsetTime = onsetTime;
         finishedPoints.push(currentPoint);
       }, 1500);
@@ -264,6 +278,20 @@ export class Components {
         div.appendChild(cross1);
         div.appendChild(cross2);
         break;
+
+      case "square":
+        const adjustSquare = parseInt(this.props.diameter) / 2;
+        const square = document.createElement("div");
+        square.style.width = this.props.diameter;
+        square.style.height = this.props.diameter;
+        square.style.borderRadius = "50%";
+        square.style.backgroundColor = this.props.color;
+        square.style.position = "absolute";
+        square.style.left = `calc(${x}% - ${adjustSquare}px)`;
+        square.style.top = `calc(${y}% - ${adjustSquare}px)`;
+        div.appendChild(square);
+        break;
+
       default:
         throw new Error("Invalid shape.");
     }
