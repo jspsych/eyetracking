@@ -6,7 +6,7 @@ type fixationProps = {
   diameter: string;
   /** The color of the fixation used. */
   color: string;
-  /** The shape of the fixation used. (ACCEPTED: circle, idk the name, cross, maybe x?) */
+  /** The shape of the fixation used. (ACCEPTED: circle, reticule, cross, square) */
   shape: string;
   /** The thickness of a cross fixation. */
   crossThickness: string;
@@ -228,9 +228,6 @@ export class Components {
     this.currentComponents = [];
   }
 
-  // TODO- add different fixations: CROSS, FUNNY THING, SQUARE
-  // TODO- when developing customized fixations, should we pass in an object? or should we split it?
-  // ** For now, we'll set a generalized object that can be modified.
   /**
    * This will create a fixation based off of the given coordinates, placing it in the div.
    * The properties of the fixation are customizable through the {@link props} field.
@@ -240,6 +237,13 @@ export class Components {
    * @param div The div that the fixation will be placed in.
    */
   drawFixation(x: number, y: number, div: HTMLDivElement) {
+    if (div === null || div === undefined) {
+      throw new Error("Please provide a div to draw the fixation in.");
+    }
+    if (div.parentElement === null || div.parentElement === undefined) {
+      throw new Error("Div cannot be document.body.");
+    }
+
     switch (this.props.shape) {
       case "circle":
         const adjustCircle = parseInt(this.props.diameter) / 2;
@@ -261,20 +265,20 @@ export class Components {
         cross1.style.height = this.props.diameter;
         cross1.style.backgroundColor = this.props.color;
         cross1.style.position = "absolute";
-        cross1.style.left = `calc(${x}% - ${adjustCross}px + ${
+        cross1.style.left = `calc(${x}% - ${adjustCross}px)`;
+        cross1.style.top = `calc(${y}% - ${
           parseInt(this.props.diameter) / 2
         }px)`;
-        cross1.style.top = `calc(${y}%)`;
 
         const cross2 = document.createElement("div");
         cross2.style.width = this.props.diameter;
         cross2.style.height = this.props.crossThickness;
         cross2.style.backgroundColor = this.props.color;
         cross2.style.position = "absolute";
-        cross2.style.left = `calc(${x}%)`;
-        cross2.style.top = `calc(${y}% - ${adjustCross}px + ${
+        cross2.style.left = `calc(${x}% - ${
           parseInt(this.props.diameter) / 2
         }px)`;
+        cross2.style.top = `calc(${y}% - ${adjustCross}px)`;
         div.appendChild(cross1);
         div.appendChild(cross2);
         break;
@@ -290,6 +294,68 @@ export class Components {
         square.style.left = `calc(${x}% - ${adjustSquare}px)`;
         square.style.top = `calc(${y}% - ${adjustSquare}px)`;
         div.appendChild(square);
+        break;
+
+      case "reticule":
+        if (parseInt(this.props.diameter) <= 10) {
+          console.warn("Reticule diameter is small and will look odd.");
+        }
+        const adjustReticule = parseInt(this.props.diameter) / 2;
+        const outerCircle = document.createElement("div");
+        outerCircle.style.width = this.props.diameter;
+        outerCircle.style.height = this.props.diameter;
+        outerCircle.style.borderRadius = "50%";
+        outerCircle.style.backgroundColor = this.props.color;
+        outerCircle.style.position = "absolute";
+        outerCircle.style.left = `calc(${x}% - ${adjustReticule}px)`;
+        outerCircle.style.top = `calc(${y}% - ${adjustReticule}px)`;
+        outerCircle.style.zIndex = "1";
+        div.appendChild(outerCircle);
+
+        const adjustInner = adjustReticule / 2;
+        const innerCircle = document.createElement("div");
+        const innerSize = `${parseInt(this.props.diameter) / 2}px`;
+        innerCircle.style.width = innerSize;
+        innerCircle.style.height = innerSize;
+        innerCircle.style.borderRadius = "50%";
+        innerCircle.style.backgroundColor = this.props.color;
+        innerCircle.style.position = "absolute";
+        innerCircle.style.left = `calc(${x}% - ${adjustInner}px)`;
+        innerCircle.style.top = `calc(${y}% - ${adjustInner}px)`;
+        innerCircle.style.zIndex = "3";
+        div.appendChild(innerCircle);
+
+        const eraseColor =
+          div.parentElement.style.backgroundColor === ""
+            ? "white"
+            : div.parentElement.style.backgroundColor;
+        const eraseThickness = parseInt(this.props.diameter) / 4;
+        const eraseSize = `${eraseThickness}px`;
+        const adjustErase = eraseThickness / 2;
+
+        const eCross1 = document.createElement("div");
+        eCross1.style.width = eraseSize;
+        eCross1.style.height = this.props.diameter;
+        eCross1.style.backgroundColor = eraseColor;
+        eCross1.style.position = "absolute";
+        eCross1.style.left = `calc(${x}% - ${adjustErase}px)`;
+        eCross1.style.top = `calc(${y}% - ${
+          parseInt(this.props.diameter) / 2
+        }px)`;
+        eCross1.style.zIndex = "2";
+
+        const eCross2 = document.createElement("div");
+        eCross2.style.width = this.props.diameter;
+        eCross2.style.height = eraseSize;
+        eCross2.style.backgroundColor = eraseColor;
+        eCross2.style.position = "absolute";
+        eCross2.style.left = `calc(${x}% - ${
+          parseInt(this.props.diameter) / 2
+        }px)`;
+        eCross2.style.top = `calc(${y}% - ${adjustErase}px)`;
+        eCross2.style.zIndex = "2";
+        div.appendChild(eCross1);
+        div.appendChild(eCross2);
         break;
 
       default:

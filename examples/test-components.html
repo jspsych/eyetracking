@@ -21,24 +21,65 @@
     div.id = "cal";
     document.body.appendChild(div);
 
-    test(5, 5, div);
+    test(10, 10, div);
     test(0, 0, div);
 
-    comp.props.shape = "cross";
-    comp.props.diameter = "100px";
-    comp.drawFixation(24, 50, div);
+    for (let i = 0; i < 10; i++) {
+      test(Math.random() * 100, Math.random() * 100, div);
+    }
+
+    comp.props.shape = "reticule";
+    comp.props.diameter = "20px";
+    comp.props.color = "black";
+    comp.drawFixation(20, 20, div);
 
     function test(x, y, div) {
-      const adjust = parseInt(4) / 2;
-      const cross1 = document.createElement("div");
-      cross1.style.width = "10px";
-      cross1.style.height = "10px";
-      cross1.style.backgroundColor = "green";
-      cross1.style.position = "absolute";
-      cross1.style.left = `calc(${x}% - ${adjust}px)`;
-      cross1.style.top = `calc(${y}% - ${adjust}px)`;
+      const color =
+        div.parentNode.style.backgroundColor === ""
+          ? "white"
+          : div.parentNode.style.backgroundColor;
 
-      div.appendChild(cross1);
+      const outerCircle = document.createElement("div");
+      outerCircle.style.width = "20px";
+      outerCircle.style.height = "20px";
+      outerCircle.style.backgroundColor = "green";
+      outerCircle.style.position = "absolute";
+      outerCircle.style.left = `calc(${x}% - ${10}px)`;
+      outerCircle.style.top = `calc(${y}% - ${10}px)`;
+      outerCircle.style.borderRadius = "50%";
+      outerCircle.style.zIndex = "1";
+      div.appendChild(outerCircle);
+
+      const blankCross1 = document.createElement("div");
+      blankCross1.style.width = "5px";
+      blankCross1.style.height = "20px";
+      blankCross1.style.backgroundColor = color;
+      blankCross1.style.position = "absolute";
+      blankCross1.style.left = `calc(${x}% - ${2.5}px)`;
+      blankCross1.style.top = `calc(${y}% - ${10}px)`;
+      blankCross1.style.zIndex = "2";
+      div.appendChild(blankCross1);
+
+      const blankCross2 = document.createElement("div");
+      blankCross2.style.width = "20px";
+      blankCross2.style.height = "5px";
+      blankCross2.style.backgroundColor = color;
+      blankCross2.style.position = "absolute";
+      blankCross2.style.left = `calc(${x}% - ${10}px)`;
+      blankCross2.style.top = `calc(${y}% - ${2.5}px)`;
+      blankCross2.style.zIndex = "2";
+      div.appendChild(blankCross2);
+
+      const innerCircle = document.createElement("div");
+      innerCircle.style.width = "10px";
+      innerCircle.style.height = "10px";
+      innerCircle.style.backgroundColor = "red";
+      innerCircle.style.position = "absolute";
+      innerCircle.style.left = `calc(${x}% - ${5}px)`;
+      innerCircle.style.top = `calc(${y}% - ${5}px)`;
+      innerCircle.style.borderRadius = "50%";
+      innerCircle.style.zIndex = "3";
+      div.appendChild(innerCircle);
     }
 
     // const clearComponentsButton = document.createElement("button");
