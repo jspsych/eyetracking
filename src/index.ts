@@ -1,6 +1,10 @@
 import { Eyetracker } from "./Eyetracker";
 import { Components } from "./Components";
 
+/**
+ * Create a new instance of the eye tracker.
+ * @returns A new instance of the eye tracker.
+ */
 export function initEyetracker() {
   if (!("requestVideoFrameCallback" in HTMLVideoElement.prototype)) {
     window.alert(

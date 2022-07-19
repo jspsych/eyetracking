@@ -12,6 +12,8 @@ type fixationProps = {
   crossThickness: string;
 };
 
+type fixationShapeFunction = (x: number, y: number) => HTMLElement;
+
 export class Components {
   /** The eyetracker object that will be used to carry out most underlying work. */
   private Eyetracker: Eyetracker | undefined;
@@ -140,13 +142,9 @@ export class Components {
     btn.innerHTML = `${message}`;
     btn.addEventListener("click", async () => {
       const cam = selector.options[selector.selectedIndex].value;
+      const selectedCamera = devices.filter((d) => d.deviceId === cam)[0];
       if (id !== "") {
-        await this.Eyetracker!.setCamera(
-          //@ts-ignore
-          await navigator.mediaDevices.getUserMedia({
-            video: { deviceId: cam },
-          })
-        );
+        await this.Eyetracker!.setCamera(selectedCamera);
         this.clearComponents();
       } else {
         alert("Please select a camera.");
@@ -236,7 +234,12 @@ export class Components {
    * @param y The y coordinate of the fixation.
    * @param div The div that the fixation will be placed in.
    */
-  drawFixation(x: number, y: number, div: HTMLDivElement) {
+  drawFixation(
+    x: number,
+    y: number,
+    div: HTMLDivElement,
+    fixationShape: fixationShapeFunction
+  ) {
     if (div === null || div === undefined) {
       throw new Error("Please provide a div to draw the fixation in.");
     }
@@ -361,6 +364,19 @@ export class Components {
       default:
         throw new Error("Invalid shape.");
     }
+  }
+
+  drawCircleFixation(x, y) {
+    const adjustCircle = parseInt(this.props.diameter) / 2;
+    const circle = document.createElement("div");
+    circle.style.width = this.props.diameter;
+    circle.style.height = this.props.diameter;
+    circle.style.borderRadius = "50%";
+    circle.style.backgroundColor = this.props.color;
+    circle.style.position = "absolute";
+    circle.style.left = `calc(${x}% - ${adjustCircle}px)`;
+    circle.style.top = `calc(${y}% - ${adjustCircle}px)`;
+    return circle;
   }
 
   //TODO- update this if we need it or not
