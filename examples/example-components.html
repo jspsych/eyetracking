@@ -21,23 +21,17 @@
   const Eyetracker = eyetrack.initEyetracker();
   const comp = eyetrack.initComponents(Eyetracker);
 
-  // basically a "go to the next stage" button
-  const clearComponentsButton = document.createElement("button");
-  clearComponentsButton.textContent = "Next";
-  clearComponentsButton.addEventListener("click", () => {
-    comp.clearComponents();
-  });
-
   async function start() {
     const landing = await comp.createLanding();
     document.body.append(landing);
     // create a wrapper so that the button doesn't stretch b/c landing is flex
     let wrapper = document.createElement("div");
-    let next = clearComponentsButton;
+    let next = document.createElement("button");
+    next.innerText = "Next";
     // invokes the next step and clears itself
     next.addEventListener("click", () => {
+      next.parentNode.parentNode.remove();
       selectorPrompt();
-      next.parentNode.remove();
     });
     wrapper.append(next);
     landing.append(wrapper);
