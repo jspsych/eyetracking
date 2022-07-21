@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="UTF-8" />
+  <title>An Eyetracking Experiment</title>
+  <script src="../dist/bundle.js"></script>
+</head>
+<style>
+  body {
+    margin: 0px;
+    padding: 0px;
+  }
+</style>
+<body></body>
+<script>
+  /**
+   * GOALS:
+   * Display ease of use workflow for the user.
+   * Create a simple experiment that can be used to test the eyetracker.
+   * Utilize as many custom variables as possible.
+   */
+  const Eyetracker = eyetrack.initEyetracker();
+  const comp = eyetrack.initComponents(Eyetracker);
+
+  async function start() {
+    const landing = await comp.createLanding();
+    document.body.append(landing);
+    // create a wrapper so that the button doesn't stretch b/c landing is flex
+    let wrapper = document.createElement("div");
+    let next = document.createElement("button");
+    next.innerText = "Next";
+    // invokes the next step and clears itself
+    next.addEventListener("click", () => {
+      next.parentNode.parentNode.remove();
+      selectorPrompt();
+    });
+    wrapper.append(next);
+    landing.append(wrapper);
+  }
+
+  async function selectorPrompt() {
+    // giving the html components allows us to modify the style!
+    const [selector, btn] = await comp.createSelector();
+    selector.style.margin = "50px";
+    document.body.append(selector);
+    btn.style.top = "50px";
+    document.body.append(btn);
+
+    btn.addEventListener("click", () => {
+      // i'm unsure if setTimeout is necessary
+      // wanted to make sure the components would clear, THEN calibrate.
+      setTimeout(async () => {
+        const div = document.createElement("div");
+        div.style.width = "100%";
+        div.style.height = "100%";
+        div.style.position = "fixed";
+        div.id = "cal";
+        document.body.appendChild(div);
+        await comp.preload();
+        let ret = await comp.calibrate(div);
+        console.log(ret);
+      }, 1000);
+    });
+  }
+
+  start();
+</script>
