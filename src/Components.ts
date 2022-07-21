@@ -6,25 +6,25 @@ type fixationProps = {
   diameter: string;
   /** The color of the fixation used. */
   color: string;
-  /** The shape of the fixation used. (ACCEPTED: circle, reticule, cross, square) */
-  shape: string;
+  /** The function of the fixation used to generate it. */
+  shape: fixationShapeFunction;
   /** The thickness of a cross fixation. */
   crossThickness: string;
 };
 
+/** The function type used by {@link calibrate()} in order to draw a fixation. */
+type fixationShapeFunction = (x: number, y: number) => HTMLElement;
+
 export class Components {
   /** The eyetracker object that will be used to carry out most underlying work. */
   private Eyetracker: Eyetracker | undefined;
-  /** The current components created
-   * and displayed by this class and will be cleared on {@link clearComponents()} */
-  private currentComponents: Array<string> = [];
   /** The calibration div used in the {@link calibrate()} function. */
   private calDivUsed: HTMLDivElement | undefined;
   /** The properties of the fixation that will be created by {@link drawFixation()}. */
   private props: fixationProps = {
     diameter: "10px",
     color: "red",
-    shape: "circle",
+    shape: this.drawCircleFixation,
     crossThickness: "4px",
   };
 
@@ -82,16 +82,10 @@ export class Components {
     id: string = "landing",
     message: string = this.DEFAULT_MESSAGE
   ): HTMLDivElement {
-    this.currentComponents.push(id);
-    this.currentComponents.push(`${id}-wrapper`);
     let landing = document.createElement("div");
     landing.id = id;
     landing.classList.add("landing");
-    landing.innerHTML = `
-            <div class="landing-message">
-                <p>${message}</p>
-            </div>
-        `;
+    landing.innerHTML = `<p>${message}</p>`;
 
     let wrapper = document.createElement("div");
     wrapper.id = `${id}-wrapper`;
@@ -116,41 +110,34 @@ export class Components {
     id: string = "selector",
     message: string = "Select a camera"
   ): Promise<Array<HTMLElement>> {
-    this.currentComponents.push(id);
     let selector = document.createElement("select");
     selector.id = id;
 
     await this.Eyetracker!.getCameraPermission();
     const devices = await this.Eyetracker!.getListOfCameras();
 
-    const blank = document.createElement("option");
-    blank.style.display = "none";
-    selector.appendChild(blank);
+    if (devices.length !== 1) {
+      const blank = document.createElement("option");
+      blank.style.display = "none";
+      selector.appendChild(blank);
+    }
 
-    devices.forEach((d) => {
+    for (const d of devices) {
       let option = document.createElement("option");
       option.value = d.deviceId;
       option.innerHTML = d.label;
       selector.appendChild(option);
-    });
+    }
 
     const btn = document.createElement("button");
     btn.id = `${id}-btn`;
-    this.currentComponents.push(btn.id);
     btn.innerHTML = `${message}`;
     btn.addEventListener("click", async () => {
       const cam = selector.options[selector.selectedIndex].value;
-      if (id !== "") {
-        await this.Eyetracker!.setCamera(
-          //@ts-ignore
-          await navigator.mediaDevices.getUserMedia({
-            video: { deviceId: cam },
-          })
-        );
-        this.clearComponents();
-      } else {
-        alert("Please select a camera.");
-      }
+      const selectedCamera = devices.filter((d) => d.deviceId === cam)[0];
+      await this.Eyetracker!.setCamera(selectedCamera);
+      selector.remove();
+      btn.remove();
     });
     return new Array<HTMLElement>(selector, btn);
   }
@@ -171,8 +158,7 @@ export class Components {
     points: Array<Array<number>> = this.DEFAULT_POINTS
   ): Promise<Array<object>> {
     if (div === null) {
-      div = document.createElement("div");
-      div.id = "cal-div";
+      throw new Error("Please provide a div.");
     } else {
       div.innerHTML = "";
     }
@@ -192,7 +178,7 @@ export class Components {
       let point = points.shift();
       if (point === undefined) {
         clearInterval(calibrateLoop);
-        //TODO- what exactly should we return?
+        //TODO- Update this to return what exactly we need for the neural network.
         console.log(await this.Eyetracker!.processCalibrationPoints()); // facial landmarks
         return finishedPoints; // imageData + onset time
       }
@@ -200,32 +186,20 @@ export class Components {
       let onsetTime = performance.now();
 
       setTimeout(async () => {
+        //TODO- eventually we must update the API so that we can just gather the facial
+        //landmarks/image data using a field in eyetracker.
         await this.Eyetracker!.detectFace();
         let currentPoint: any = this.Eyetracker!.calibratePoint(
           point![0],
           point![1]
         );
         //TODO- let's find a way to prevent throwing this error, maybe explicitly defining?
+        // fixed with the :any cast, but we should still consider implementing types.
         currentPoint.onsetTime = onsetTime;
         finishedPoints.push(currentPoint);
       }, 1500);
     }, 3000);
     return finishedPoints;
-  }
-
-  /**
-   * This will clear all components that were created by this class.
-   */
-  clearComponents() {
-    this.currentComponents.forEach((c) => {
-      let el = document.getElementById(c);
-      if (el !== null) {
-        el.remove();
-      } else {
-        console.log(`${c} not found`);
-      }
-    });
-    this.currentComponents = [];
   }
 
   /**
@@ -244,123 +218,144 @@ export class Components {
       throw new Error("Div cannot be document.body.");
     }
 
-    switch (this.props.shape) {
-      case "circle":
-        const adjustCircle = parseInt(this.props.diameter) / 2;
-        const circle = document.createElement("div");
-        circle.style.width = this.props.diameter;
-        circle.style.height = this.props.diameter;
-        circle.style.borderRadius = "50%";
-        circle.style.backgroundColor = this.props.color;
-        circle.style.position = "absolute";
-        circle.style.left = `calc(${x}% - ${adjustCircle}px)`;
-        circle.style.top = `calc(${y}% - ${adjustCircle}px)`;
-        div.appendChild(circle);
-        break;
+    let fixation = this.props.shape.bind(this)(x, y);
+    div.appendChild(fixation);
+  }
 
-      case "cross":
-        const adjustCross = parseInt(this.props.crossThickness) / 2;
-        const cross1 = document.createElement("div");
-        cross1.style.width = this.props.crossThickness;
-        cross1.style.height = this.props.diameter;
-        cross1.style.backgroundColor = this.props.color;
-        cross1.style.position = "absolute";
-        cross1.style.left = `calc(${x}% - ${adjustCross}px)`;
-        cross1.style.top = `calc(${y}% - ${
-          parseInt(this.props.diameter) / 2
-        }px)`;
+  /**
+   * Creates a circle fixation centered absolutely on the given coordinates.
+   *
+   * @param x The x coordinate of the fixation.
+   * @param y The y coordinate of the fixation.
+   * @returns A circle fixation element.
+   */
+  drawCircleFixation(x: number, y: number) {
+    const adjustCircle = parseInt(this.props.diameter) / 2;
+    const circle = document.createElement("div");
+    circle.style.width = this.props.diameter;
+    circle.style.height = this.props.diameter;
+    circle.style.borderRadius = "50%";
+    circle.style.backgroundColor = this.props.color;
+    circle.style.position = "absolute";
+    circle.style.left = `calc(${x}% - ${adjustCircle}px)`;
+    circle.style.top = `calc(${y}% - ${adjustCircle}px)`;
+    return circle;
+  }
 
-        const cross2 = document.createElement("div");
-        cross2.style.width = this.props.diameter;
-        cross2.style.height = this.props.crossThickness;
-        cross2.style.backgroundColor = this.props.color;
-        cross2.style.position = "absolute";
-        cross2.style.left = `calc(${x}% - ${
-          parseInt(this.props.diameter) / 2
-        }px)`;
-        cross2.style.top = `calc(${y}% - ${adjustCross}px)`;
-        div.appendChild(cross1);
-        div.appendChild(cross2);
-        break;
+  /**
+   * Creates a cross (+) fixation centered absolutely on the given coordinates.
+   *
+   * @param x The x coordinate of the fixation.
+   * @param y The y coordinate of the fixation.
+   * @returns A cross fixation element.
+   */
+  drawCrossFixation(x: number, y: number) {
+    const adjustCross = parseInt(this.props.crossThickness) / 2;
+    const cross1 = document.createElement("div");
+    cross1.style.width = this.props.crossThickness;
+    cross1.style.height = this.props.diameter;
+    cross1.style.backgroundColor = this.props.color;
+    cross1.style.position = "absolute";
+    cross1.style.left = `calc(${x}% - ${adjustCross}px)`;
+    cross1.style.top = `calc(${y}% - ${parseInt(this.props.diameter) / 2}px)`;
 
-      case "square":
-        const adjustSquare = parseInt(this.props.diameter) / 2;
-        const square = document.createElement("div");
-        square.style.width = this.props.diameter;
-        square.style.height = this.props.diameter;
-        square.style.borderRadius = "50%";
-        square.style.backgroundColor = this.props.color;
-        square.style.position = "absolute";
-        square.style.left = `calc(${x}% - ${adjustSquare}px)`;
-        square.style.top = `calc(${y}% - ${adjustSquare}px)`;
-        div.appendChild(square);
-        break;
+    const cross2 = document.createElement("div");
+    cross2.style.width = this.props.diameter;
+    cross2.style.height = this.props.crossThickness;
+    cross2.style.backgroundColor = this.props.color;
+    cross2.style.position = "absolute";
+    cross2.style.left = `calc(${x}% - ${parseInt(this.props.diameter) / 2}px)`;
+    cross2.style.top = `calc(${y}% - ${adjustCross}px)`;
 
-      case "reticule":
-        if (parseInt(this.props.diameter) <= 10) {
-          console.warn("Reticule diameter is small and will look odd.");
-        }
-        const adjustReticule = parseInt(this.props.diameter) / 2;
-        const outerCircle = document.createElement("div");
-        outerCircle.style.width = this.props.diameter;
-        outerCircle.style.height = this.props.diameter;
-        outerCircle.style.borderRadius = "50%";
-        outerCircle.style.backgroundColor = this.props.color;
-        outerCircle.style.position = "absolute";
-        outerCircle.style.left = `calc(${x}% - ${adjustReticule}px)`;
-        outerCircle.style.top = `calc(${y}% - ${adjustReticule}px)`;
-        outerCircle.style.zIndex = "1";
-        div.appendChild(outerCircle);
+    const wrapper = document.createElement("div");
+    wrapper.appendChild(cross1);
+    wrapper.appendChild(cross2);
+    return wrapper;
+  }
 
-        const adjustInner = adjustReticule / 2;
-        const innerCircle = document.createElement("div");
-        const innerSize = `${parseInt(this.props.diameter) / 2}px`;
-        innerCircle.style.width = innerSize;
-        innerCircle.style.height = innerSize;
-        innerCircle.style.borderRadius = "50%";
-        innerCircle.style.backgroundColor = this.props.color;
-        innerCircle.style.position = "absolute";
-        innerCircle.style.left = `calc(${x}% - ${adjustInner}px)`;
-        innerCircle.style.top = `calc(${y}% - ${adjustInner}px)`;
-        innerCircle.style.zIndex = "3";
-        div.appendChild(innerCircle);
+  /**
+   * Creates a square fixation centered absolutely on the given coordinates.
+   *
+   * @param x The x coordinate of the fixation.
+   * @param y The y coordinate of the fixation.
+   * @returns A square fixation element.
+   */
+  drawSquareFixation(x: number, y: number) {
+    const adjustSquare = parseInt(this.props.diameter) / 2;
+    const square = document.createElement("div");
+    square.style.width = this.props.diameter;
+    square.style.height = this.props.diameter;
+    square.style.borderRadius = "50%";
+    square.style.backgroundColor = this.props.color;
+    square.style.position = "absolute";
+    square.style.left = `calc(${x}% - ${adjustSquare}px)`;
+    square.style.top = `calc(${y}% - ${adjustSquare}px)`;
+    return square;
+  }
 
-        const eraseColor =
-          div.parentElement.style.backgroundColor === ""
-            ? "white"
-            : div.parentElement.style.backgroundColor;
-        const eraseThickness = parseInt(this.props.diameter) / 4;
-        const eraseSize = `${eraseThickness}px`;
-        const adjustErase = eraseThickness / 2;
-
-        const eCross1 = document.createElement("div");
-        eCross1.style.width = eraseSize;
-        eCross1.style.height = this.props.diameter;
-        eCross1.style.backgroundColor = eraseColor;
-        eCross1.style.position = "absolute";
-        eCross1.style.left = `calc(${x}% - ${adjustErase}px)`;
-        eCross1.style.top = `calc(${y}% - ${
-          parseInt(this.props.diameter) / 2
-        }px)`;
-        eCross1.style.zIndex = "2";
-
-        const eCross2 = document.createElement("div");
-        eCross2.style.width = this.props.diameter;
-        eCross2.style.height = eraseSize;
-        eCross2.style.backgroundColor = eraseColor;
-        eCross2.style.position = "absolute";
-        eCross2.style.left = `calc(${x}% - ${
-          parseInt(this.props.diameter) / 2
-        }px)`;
-        eCross2.style.top = `calc(${y}% - ${adjustErase}px)`;
-        eCross2.style.zIndex = "2";
-        div.appendChild(eCross1);
-        div.appendChild(eCross2);
-        break;
-
-      default:
-        throw new Error("Invalid shape.");
+  /**
+   * Creates a reticule fixation centered absolutely on the given coordinates.
+   *
+   * @param x The x coordinate of the fixation.
+   * @param y The y coordinate of the fixation.
+   * @returns A reticule fixation element.
+   */
+  drawReticuleFixation(x: number, y: number) {
+    if (parseInt(this.props.diameter) <= 10) {
+      console.warn("Reticule diameter is small and will look odd.");
     }
+    const adjustReticule = parseInt(this.props.diameter) / 2;
+    const outerCircle = document.createElement("div");
+    outerCircle.style.width = this.props.diameter;
+    outerCircle.style.height = this.props.diameter;
+    outerCircle.style.borderRadius = "50%";
+    outerCircle.style.backgroundColor = this.props.color;
+    outerCircle.style.position = "absolute";
+    outerCircle.style.left = `calc(${x}% - ${adjustReticule}px)`;
+    outerCircle.style.top = `calc(${y}% - ${adjustReticule}px)`;
+    outerCircle.style.zIndex = "1";
+
+    const adjustInner = adjustReticule / 2;
+    const innerCircle = document.createElement("div");
+    const innerSize = `${parseInt(this.props.diameter) / 2}px`;
+    innerCircle.style.width = innerSize;
+    innerCircle.style.height = innerSize;
+    innerCircle.style.borderRadius = "50%";
+    innerCircle.style.backgroundColor = this.props.color;
+    innerCircle.style.position = "absolute";
+    innerCircle.style.left = `calc(${x}% - ${adjustInner}px)`;
+    innerCircle.style.top = `calc(${y}% - ${adjustInner}px)`;
+    innerCircle.style.zIndex = "3";
+
+    const eraseColor = "white";
+    const eraseThickness = parseInt(this.props.diameter) / 4;
+    const eraseSize = `${eraseThickness}px`;
+    const adjustErase = eraseThickness / 2;
+
+    const eCross1 = document.createElement("div");
+    eCross1.style.width = eraseSize;
+    eCross1.style.height = this.props.diameter;
+    eCross1.style.backgroundColor = eraseColor;
+    eCross1.style.position = "absolute";
+    eCross1.style.left = `calc(${x}% - ${adjustErase}px)`;
+    eCross1.style.top = `calc(${y}% - ${parseInt(this.props.diameter) / 2}px)`;
+    eCross1.style.zIndex = "2";
+
+    const eCross2 = document.createElement("div");
+    eCross2.style.width = this.props.diameter;
+    eCross2.style.height = eraseSize;
+    eCross2.style.backgroundColor = eraseColor;
+    eCross2.style.position = "absolute";
+    eCross2.style.left = `calc(${x}% - ${parseInt(this.props.diameter) / 2}px)`;
+    eCross2.style.top = `calc(${y}% - ${adjustErase}px)`;
+    eCross2.style.zIndex = "2";
+
+    const wrapper = document.createElement("div");
+    wrapper.appendChild(outerCircle);
+    wrapper.appendChild(innerCircle);
+    wrapper.appendChild(eCross1);
+    wrapper.appendChild(eCross2);
+    return wrapper;
   }
 
   //TODO- update this if we need it or not
