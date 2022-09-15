@@ -149,12 +149,15 @@ export class Components {
    * PLEASE NOTE: To increase calibration accuracy, use more than 4 points. 9 is preferred.
    *
    * @param div The div that will be used to display the calibration.
+   * @param time The time between each point in the calibration process, with data collected at
+   * the middle of each interval. Default is 3s.
    * @param points A list of points denoted in absolute coordinates that will be used in calibration.
    * @returns An object containing the x and y coordinates of the calibration point,
    *  along with associated facial landmark data.
    */
   async calibrate(
     div: HTMLDivElement,
+    time: number = 3000,
     points: Array<Array<number>> = this.DEFAULT_POINTS
   ): Promise<Array<object>> {
     if (div === null) {
@@ -197,8 +200,8 @@ export class Components {
         // fixed with the :any cast, but we should still consider implementing types.
         currentPoint.onsetTime = onsetTime;
         finishedPoints.push(currentPoint);
-      }, 1500);
-    }, 3000);
+      }, time / 2);
+    }, time);
     return finishedPoints;
   }
 
